@@ -1,0 +1,7 @@
+{
+  "name": "Raven - JAMB Oral English Coach",
+  "description": "An AI-powered oral English tutor for JAMB UTME preparation using Gemini Live API.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
