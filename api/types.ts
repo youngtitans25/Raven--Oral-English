@@ -6,6 +6,9 @@ export interface LiveClientCallbacks {
   onInterrupted: () => void;
   onClose: () => void;
   onError: (error: Error) => void;
+  // Handle tool calls (e.g. display_content)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onToolCall?: (toolCalls: any[]) => void;
 }
 
 export interface LiveClient {

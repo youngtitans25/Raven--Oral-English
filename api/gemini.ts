@@ -1,6 +1,6 @@
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { LiveClient, LiveClientCallbacks } from './types';
-import { MODEL_NAME, SYSTEM_INSTRUCTION } from '../constants';
+import { MODEL_NAME, SYSTEM_INSTRUCTION, TOOLS } from '../constants';
 
 export class GeminiClient implements LiveClient {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +22,23 @@ export class GeminiClient implements LiveClient {
             callbacks.onAudioData(base64Audio);
           }
 
+          // Handle Tool Call
+          if (message.toolCall) {
+            callbacks.onToolCall?.(message.toolCall.functionCalls);
+            // Send responses back to model to acknowledge
+            message.toolCall.functionCalls.forEach(fc => {
+                this.sessionPromise?.then(session => {
+                    session.sendToolResponse({
+                        functionResponses: {
+                            id: fc.id,
+                            name: fc.name,
+                            response: { result: 'OK' }
+                        }
+                    });
+                });
+            });
+          }
+
           // Handle Interruptions
           const interrupted = message.serverContent?.interrupted;
           if (interrupted) {
@@ -41,6 +58,7 @@ export class GeminiClient implements LiveClient {
           voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Puck' } },
         },
         systemInstruction: SYSTEM_INSTRUCTION,
+        tools: TOOLS,
       },
     });
 

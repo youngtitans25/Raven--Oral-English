@@ -2,7 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { LiveClient, LiveClientCallbacks } from './types';
 import { SYSTEM_INSTRUCTION } from '../constants';
 
-const DEEPSEEK_API_KEY = process.env.REACT_APP_DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
+const DEEPSEEK_API_KEY = process.env.REACT_APP_DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || 'sk-f3d3370993574589a47bfee646626abc';
 
 export class DeepSeekClient implements LiveClient {
   private history: { role: string; content: string }[] = [];

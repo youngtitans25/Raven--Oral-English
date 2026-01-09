@@ -9,6 +9,12 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  source: Provider;
+}
+
+export interface VisualContent {
+  data: string;
+  title: string;
 }
 
 export const useLiveSession = () => {
@@ -16,6 +22,7 @@ export const useLiveSession = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [currentProvider, setCurrentProvider] = useState<Provider>('gemini');
+  const [visualContent, setVisualContent] = useState<VisualContent | null>(null);
   
   // Chat State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -66,6 +73,7 @@ export const useLiveSession = () => {
     activeSourcesRef.current.clear();
     nextStartTimeRef.current = 0;
     setAnalyser(null);
+    setVisualContent(null);
     setStatus(SessionStatus.ENDED);
     // Note: We intentionally don't clear messages immediately to allow user to review chat after end
   }, []);
@@ -82,6 +90,7 @@ export const useLiveSession = () => {
       setStatus(SessionStatus.CONNECTING);
       setErrorMessage(null);
       setMessages([]); // Clear previous chat
+      setVisualContent(null);
 
       // 1. Initialize Audio Contexts (Only needed for Gemini or playback)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,8 +173,19 @@ export const useLiveSession = () => {
              setMessages(prev => [...prev, {
                  id: Date.now().toString() + Math.random(),
                  role,
-                 content
+                 content,
+                 source: provider
              }]);
+        },
+        onToolCall: (toolCalls: any[]) => {
+            toolCalls.forEach(call => {
+                if (call.name === 'display_content') {
+                    setVisualContent({
+                        data: call.args.text,
+                        title: call.args.title
+                    });
+                }
+            });
         },
         onInterrupted: () => {
           activeSourcesRef.current.forEach((source) => {
@@ -202,7 +222,8 @@ export const useLiveSession = () => {
     currentProvider,
     messages,
     startSession,
-    sendText,
-    disconnect
+    sendChat: sendText,
+    disconnect,
+    visualContent
   };
 };

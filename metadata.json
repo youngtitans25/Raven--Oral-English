@@ -1,6 +1,6 @@
 {
-  "name": "Raven - JAMB Oral English Coach",
-  "description": "An AI-powered oral English tutor for JAMB UTME preparation using Gemini Live API.",
+  "name": "Raven - JAMB CRS Coach",
+  "description": "An AI-powered Christian Religious Studies tutor for JAMB UTME preparation focusing on the Sovereignty of God.",
   "requestFramePermissions": [
     "microphone"
   ]
