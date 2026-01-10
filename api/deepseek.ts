@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { LiveClient, LiveClientCallbacks } from './types';
-import { SYSTEM_INSTRUCTION } from '../constants';
+import { SYSTEM_INSTRUCTION, CHAT_MODEL } from '../lib/constants';
 
 const DEEPSEEK_API_KEY = process.env.REACT_APP_DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || 'sk-f3d3370993574589a47bfee646626abc';
 
@@ -135,7 +135,7 @@ export class DeepSeekClient implements LiveClient {
           }
 
           const response = await ai.models.generateContent({
-              model: 'gemini-2.5-flash', // Use flash for fast chat
+              model: CHAT_MODEL, 
               contents: contents,
               config: {
                   systemInstruction: SYSTEM_INSTRUCTION,

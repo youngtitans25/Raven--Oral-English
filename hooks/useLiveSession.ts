@@ -1,9 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
-import { SessionStatus, Provider } from '../types';
+import { SessionStatus, Provider, StudentProfile } from '../types';
 import { decodeAudioData } from '../utils/audio';
 import { GeminiClient } from '../api/gemini';
-import { DeepSeekClient } from '../api/deepseek';
 import { LiveClient } from '../api/types';
+import { generateSystemInstruction } from '../utils/context';
+import { MOCK_ANALYTICS } from '../lib/mockData';
+import { LIVE_MODEL, LIVE_MODEL_ECONOMY } from '../lib/constants';
 
 export interface ChatMessage {
   id: string;
@@ -21,10 +23,7 @@ export const useLiveSession = () => {
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.IDLE);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [currentProvider, setCurrentProvider] = useState<Provider>('gemini');
   const [visualContent, setVisualContent] = useState<VisualContent | null>(null);
-  
-  // Chat State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // Audio Contexts
@@ -41,25 +40,18 @@ export const useLiveSession = () => {
   const clientRef = useRef<LiveClient | null>(null);
 
   const disconnect = useCallback(() => {
-    // 1. Close API Session
     if (clientRef.current) {
       clientRef.current.disconnect();
       clientRef.current = null;
     }
-
-    // 2. Stop Microphone
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-
-    // 3. Stop Audio Processing
     if (processorRef.current) {
       processorRef.current.disconnect();
       processorRef.current = null;
     }
-
-    // 4. Close Audio Contexts
     if (inputAudioContextRef.current) {
       inputAudioContextRef.current.close();
       inputAudioContextRef.current = null;
@@ -68,14 +60,11 @@ export const useLiveSession = () => {
       outputAudioContextRef.current.close();
       outputAudioContextRef.current = null;
     }
-
-    // 5. Reset State
     activeSourcesRef.current.clear();
     nextStartTimeRef.current = 0;
     setAnalyser(null);
     setVisualContent(null);
     setStatus(SessionStatus.ENDED);
-    // Note: We intentionally don't clear messages immediately to allow user to review chat after end
   }, []);
 
   const sendText = useCallback(async (text: string) => {
@@ -84,15 +73,16 @@ export const useLiveSession = () => {
     }
   }, [status]);
 
-  const startSession = useCallback(async (provider: Provider) => {
+  const startSession = useCallback(async (studentProfile: StudentProfile, subject: string, topic?: string) => {
     try {
-      setCurrentProvider(provider);
       setStatus(SessionStatus.CONNECTING);
       setErrorMessage(null);
-      setMessages([]); // Clear previous chat
+      setMessages([]); 
       setVisualContent(null);
 
-      // 1. Initialize Audio Contexts (Only needed for Gemini or playback)
+      // 1. Initialize Audio Contexts
+      // NOTE: We request 16000, but the browser may ignore this and use 44100/48000.
+      // We must check the .sampleRate property after creation to be sure.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       inputAudioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
         sampleRate: 16000,
@@ -102,27 +92,35 @@ export const useLiveSession = () => {
         sampleRate: 24000,
       });
 
-      // Setup Analyser for visualization
+      const actualSampleRate = inputAudioContextRef.current.sampleRate;
+      console.log(`Audio Context initialized. Requested: 16000, Actual: ${actualSampleRate}`);
+
       const analyserNode = inputAudioContextRef.current.createAnalyser();
       analyserNode.fftSize = 256;
       setAnalyser(analyserNode);
 
-      // 2. Initialize Client based on Provider
-      if (provider === 'gemini') {
-        clientRef.current = new GeminiClient();
-      } else {
-        clientRef.current = new DeepSeekClient();
-      }
+      // 2. Generate Context-Aware Instruction using REAL profile AND Subject AND Topic
+      const systemInstruction = generateSystemInstruction(studentProfile, MOCK_ANALYTICS, subject, topic);
+
+      // 3. Select Model based on User Tier (Placeholder Logic)
+      const modelId = LIVE_MODEL; 
+
+      // 4. Initialize Client
+      clientRef.current = new GeminiClient();
       
-      // 3. Connect
+      // 5. Connect
       await clientRef.current.connect({
         onOpen: async () => {
-          console.log(`${provider} Connected`);
+          // If the user cancelled during connection, clientRef.current will be null.
+          if (!clientRef.current) {
+             console.log("Connection aborted by user.");
+             return;
+          }
+
+          console.log(`Gemini Connected for ${subject} - ${topic} using ${modelId}`);
           setStatus(SessionStatus.CONNECTED);
           
-          // Only start Mic for Gemini
-          if (provider === 'gemini') {
-            try {
+          try {
                 streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
                 if (!inputAudioContextRef.current) return;
@@ -138,13 +136,19 @@ export const useLiveSession = () => {
 
                 source.connect(processorRef.current);
                 processorRef.current.connect(inputAudioContextRef.current.destination);
+
+                // --- TRIGGER WELCOME MESSAGE ---
+                // Send a hidden prompt to the AI to initiate the conversation immediately
+                setTimeout(() => {
+                    clientRef.current?.sendText("Hello Raven! I am ready to start my session. Please welcome me warmly and introduce the topic.");
+                }, 500);
+
             } catch (err) {
                 console.error("Mic Error:", err);
                 setErrorMessage("Could not access microphone.");
                 setStatus(SessionStatus.ERROR);
                 disconnect();
             }
-          }
         },
         onAudioData: async (base64Audio: string) => {
           const outputContext = outputAudioContextRef.current;
@@ -174,7 +178,7 @@ export const useLiveSession = () => {
                  id: Date.now().toString() + Math.random(),
                  role,
                  content,
-                 source: provider
+                 source: 'gemini'
              }]);
         },
         onToolCall: (toolCalls: any[]) => {
@@ -184,6 +188,25 @@ export const useLiveSession = () => {
                         data: call.args.text,
                         title: call.args.title
                     });
+                } else if (call.name === 'end_session') {
+                    // Calculate remaining audio duration in the queue
+                    const outputCtx = outputAudioContextRef.current;
+                    let waitTime = 500; // Minimal buffer
+
+                    if (outputCtx) {
+                        // nextStartTimeRef.current represents the timestamp when the LAST scheduled chunk finishes
+                        const remainingTime = nextStartTimeRef.current - outputCtx.currentTime;
+                        
+                        // If audio is still playing (remainingTime > 0), wait for it + small buffer
+                        if (remainingTime > 0) {
+                            waitTime = (remainingTime * 1000) + 500; // Convert to ms + 500ms buffer
+                        }
+                    }
+
+                    console.log(`AI requested session end. Disconnecting in ${Math.round(waitTime)}ms...`);
+                    setTimeout(() => {
+                        disconnect();
+                    }, waitTime);
                 }
             });
         },
@@ -201,11 +224,14 @@ export const useLiveSession = () => {
           }
         },
         onError: (err) => {
-          console.error("Session Error:", err);
           setErrorMessage(err.message || "Connection lost.");
           setStatus(SessionStatus.ERROR);
           disconnect();
         }
+      }, {
+          systemInstruction, // Pass generated instruction here
+          modelId, // Pass selected model ID
+          audioSampleRate: actualSampleRate // Pass actual hardware sample rate
       });
 
     } catch (error) {
@@ -219,7 +245,6 @@ export const useLiveSession = () => {
     status,
     errorMessage,
     analyser,
-    currentProvider,
     messages,
     startSession,
     sendChat: sendText,

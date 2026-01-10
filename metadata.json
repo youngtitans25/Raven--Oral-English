@@ -1,6 +1,6 @@
 {
-  "name": "Raven - JAMB CRS Coach",
-  "description": "An AI-powered Christian Religious Studies tutor for JAMB UTME preparation focusing on the Sovereignty of God.",
+  "name": "Raven",
+  "description": "An AI-powered learning tool.",
   "requestFramePermissions": [
     "microphone"
   ]
