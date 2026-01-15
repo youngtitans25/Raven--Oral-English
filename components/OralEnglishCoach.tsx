@@ -3,7 +3,7 @@ import Visualizer from './Visualizer';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { SessionStatus } from '../types';
-import { StopCircle, Mic, Volume2, ArrowLeft, User, Bot } from 'lucide-react';
+import { StopCircle, Mic, Volume2, ArrowLeft, User, Bot, Pause, Play } from 'lucide-react';
 import { ChatMessage, VisualContent } from '../hooks/useLiveSession';
 
 interface OralEnglishCoachProps {
@@ -12,6 +12,7 @@ interface OralEnglishCoachProps {
   visualContent: VisualContent | null;
   messages: ChatMessage[];
   onDisconnect: () => void;
+  onTogglePause?: () => void;
 }
 
 const OralEnglishCoach: React.FC<OralEnglishCoachProps> = ({
@@ -19,7 +20,8 @@ const OralEnglishCoach: React.FC<OralEnglishCoachProps> = ({
   analyser,
   visualContent,
   messages,
-  onDisconnect
+  onDisconnect,
+  onTogglePause
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +39,24 @@ const OralEnglishCoach: React.FC<OralEnglishCoachProps> = ({
       <div className="absolute inset-0 opacity-40 pointer-events-none">
         <Visualizer analyser={analyser} isActive={status === SessionStatus.CONNECTED} />
       </div>
+      
+      {/* Paused Overlay */}
+      {status === SessionStatus.PAUSED && (
+        <div className="absolute inset-0 z-40 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 animate-in zoom-in-90">
+                <div className="w-20 h-20 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center ring-4 ring-amber-500/10">
+                    <Pause className="w-10 h-10 fill-current" />
+                </div>
+                <h2 className="text-2xl font-bold tracking-tight">Session Paused</h2>
+                <Button 
+                    onClick={onTogglePause} 
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-8 py-6 rounded-full text-lg shadow-lg hover:scale-105 transition-all"
+                >
+                    <Play className="w-5 h-5 mr-2 fill-current" /> Resume
+                </Button>
+            </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="relative z-10 flex justify-between items-center p-6 bg-gradient-to-b from-slate-900/80 to-transparent">
@@ -44,7 +64,7 @@ const OralEnglishCoach: React.FC<OralEnglishCoachProps> = ({
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Button>
         <div className="flex items-center gap-2 bg-red-500/20 px-3 py-1 rounded-full border border-red-500/50 backdrop-blur-sm">
-             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+             <div className={`w-2 h-2 rounded-full ${status === SessionStatus.CONNECTED ? 'bg-red-500 animate-pulse' : 'bg-slate-400'}`}></div>
              <span className="text-xs font-bold text-red-200 uppercase tracking-wider">Live Coach</span>
         </div>
       </div>
@@ -122,7 +142,19 @@ const OralEnglishCoach: React.FC<OralEnglishCoachProps> = ({
         </div>
 
         {/* Footer Controls */}
-        <div className="flex justify-center pb-4">
+        <div className="flex justify-center gap-4 pb-4">
+            {onTogglePause && (
+                <Button
+                    variant="outline"
+                    size="lg"
+                    className="rounded-full w-16 h-16 p-0 border-4 border-slate-700 hover:bg-slate-800 text-amber-500 hover:text-amber-400 hover:scale-105 transition-all duration-300"
+                    onClick={onTogglePause}
+                    title={status === SessionStatus.PAUSED ? "Resume" : "Pause"}
+                >
+                    {status === SessionStatus.PAUSED ? <Play className="w-6 h-6 fill-current" /> : <Pause className="w-6 h-6 fill-current" />}
+                </Button>
+            )}
+            
             <Button 
                 variant="destructive" 
                 size="lg" 

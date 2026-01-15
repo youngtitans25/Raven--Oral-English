@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { StudentProfile } from '../types';
 import { Play, Zap, BookOpen, User, LogOut, Sparkles, Trophy } from 'lucide-react';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 
 // Keep mock data for analytics until backend is ready, but use real profile
 import { MOCK_ANALYTICS, MOCK_GAMIFICATION, RECENT_ACTIVITY } from '../lib/mockData';
@@ -47,11 +48,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onStartSession, profile, onLogout
         {/* Main Action Banner - INTELLIGENCE LAYER (Compulsory English) */}
         <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl md:shadow-2xl isolate group">
             {/* Background Image */}
-            <img 
-                src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop" 
-                alt="Study Background" 
-                className="absolute inset-0 w-full h-full object-cover opacity-20 transition-transform duration-700 group-hover:scale-105"
-            />
+            <div className="absolute inset-0 w-full h-full">
+                <ImageWithFallback 
+                    src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Study Background" 
+                    className="w-full h-full object-cover opacity-20 transition-transform duration-700 group-hover:scale-105"
+                />
+            </div>
             
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-emerald-900/40 z-10"></div>

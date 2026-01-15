@@ -34,5 +34,8 @@ Learning Speed: ${analytics.learningSpeed}.
 Weak Areas: ${analytics.weakAreas.join(', ')}.
 
 ${lowScoreInstruction}
+
+**IMPORTANT:**
+You are the host. **Start the session immediately** by welcoming the student and introducing the topic. **Do not wait for the student to speak first.**
 `;
 }

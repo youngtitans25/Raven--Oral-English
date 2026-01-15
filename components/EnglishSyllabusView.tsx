@@ -3,6 +3,7 @@ import { ArrowLeft, BookOpen, PenTool, Mic, Play, Sparkles, ChevronRight, Layers
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ENGLISH_SECTIONS } from '../lib/coaches';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 
 interface EnglishSyllabusViewProps {
   onBack: () => void;
@@ -11,7 +12,6 @@ interface EnglishSyllabusViewProps {
 
 const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [imgError, setImgError] = useState<Record<string, boolean>>({});
 
   // Get the currently selected section data object
   const activeSection = selectedSectionId 
@@ -55,7 +55,7 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
                         
                         <Card className="flex-1 flex flex-col overflow-hidden border-0 shadow-lg group-hover:shadow-2xl transition-all duration-300 rounded-3xl h-full">
                             <div className="h-40 md:h-48 overflow-hidden relative">
-                                <img 
+                                <ImageWithFallback 
                                     src={section.image} 
                                     alt={section.title}
                                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
@@ -112,11 +112,10 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
                         <div className="flex flex-row sm:flex-col h-full">
                             {/* Image side (mobile: left, desktop: top) */}
                             <div className="w-1/3 sm:w-full h-auto sm:h-40 overflow-hidden relative shrink-0">
-                                <img 
-                                    src={imgError[module.id] ? 'https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=1000&auto=format&fit=crop' : module.image} 
+                                <ImageWithFallback 
+                                    src={module.image} 
                                     alt={module.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    onError={() => setImgError(prev => ({...prev, [module.id]: true}))}
                                 />
                                 <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
                             </div>

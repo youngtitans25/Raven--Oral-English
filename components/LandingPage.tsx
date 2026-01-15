@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from './ui/button';
 import { BookOpen, TrendingUp, Target, School, ArrowRight } from 'lucide-react';
 import { AppView } from '../types';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -9,8 +10,6 @@ interface LandingPageProps {
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onNavigate }) => {
-  const [logoError, setLogoError] = useState(false);
-
   return (
     <div className="min-h-screen bg-[#FAFBFC] text-[#111827] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl mx-auto">
@@ -19,17 +18,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onNavigate }) => {
           {/* Hero Section */}
           <div className="text-center py-10">
             <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 rounded-3xl bg-emerald-50 flex items-center justify-center border border-emerald-100 p-4 shadow-sm">
-                     {!logoError ? (
-                        <img 
-                            src="/logo.png" 
-                            alt="Raven Logo" 
-                            className="w-full h-full object-contain" 
-                            onError={() => setLogoError(true)}
-                        />
-                     ) : (
-                        <span className="text-4xl">🎓</span>
-                     )}
+                <div className="w-24 h-24 rounded-3xl bg-emerald-50 flex items-center justify-center border border-emerald-100 p-4 shadow-sm overflow-hidden">
+                     <ImageWithFallback 
+                        src="/logo.png" 
+                        alt="Raven Logo" 
+                        className="w-full h-full object-contain"
+                        fallbackContent={<span className="text-4xl">🎓</span>}
+                     />
                 </div>
             </div>
             <h1 className="text-4xl font-bold mb-4 text-emerald-600 font-display">Raven</h1>

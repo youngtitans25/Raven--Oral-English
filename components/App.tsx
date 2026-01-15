@@ -3,6 +3,7 @@ import { StudentProfile, SessionStatus, AppView } from './types';
 import { useLiveSession } from './hooks/useLiveSession';
 import { Loader2 } from 'lucide-react';
 import { Button } from './components/ui/button';
+import { ImageWithFallback } from './components/ui/ImageWithFallback';
 
 // Screens
 import LandingPage from './components/LandingPage';
@@ -26,7 +27,6 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [activeSubject, setActiveSubject] = useState<string>('Use of English');
   const [activeTopic, setActiveTopic] = useState<string | undefined>(undefined);
-  const [logoError, setLogoError] = useState(false);
 
   // Live Session Hook
   const { 
@@ -230,16 +230,14 @@ const App: React.FC = () => {
         <LayoutWrapper>
             <header className="bg-white/90 backdrop-blur-md border-b px-6 py-4 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-3">
-                    {!logoError ? (
-                        <img 
+                    <div className="w-8 h-8 flex items-center justify-center">
+                        <ImageWithFallback 
                             src="/logo.png" 
                             alt="Raven Logo" 
-                            className="w-8 h-8 object-contain" 
-                            onError={() => setLogoError(true)}
+                            className="w-full h-full object-contain"
+                            fallbackContent={<div className="w-8 h-8 bg-gradient-to-br from-palm-500 to-palm-700 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">R</div>}
                         />
-                    ) : (
-                        <div className="w-8 h-8 bg-gradient-to-br from-palm-500 to-palm-700 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">R</div>
-                    )}
+                    </div>
                     <span className="font-bold text-xl tracking-tight text-slate-900">Raven</span>
                 </div>
                 <div className="text-sm text-muted-foreground hidden md:block">

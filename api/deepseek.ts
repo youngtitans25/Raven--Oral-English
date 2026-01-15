@@ -9,10 +9,12 @@ export class DeepSeekClient implements LiveClient {
   private callbacks: LiveClientCallbacks | null = null;
   private isProcessing = false;
   private useFallback = false;
+  private isPaused = false;
 
   async connect(callbacks: LiveClientCallbacks): Promise<void> {
     this.callbacks = callbacks;
     this.history = [{ role: 'system', content: SYSTEM_INSTRUCTION }];
+    this.isPaused = false;
     
     // Simulate connection delay
     setTimeout(() => {
@@ -27,7 +29,16 @@ export class DeepSeekClient implements LiveClient {
   }
 
   async sendText(text: string): Promise<void> {
+      if (this.isPaused) return;
       await this.processMessage(text);
+  }
+  
+  pause(): void {
+    this.isPaused = true;
+  }
+  
+  resume(): void {
+    this.isPaused = false;
   }
 
   disconnect(): void {
@@ -37,7 +48,7 @@ export class DeepSeekClient implements LiveClient {
   }
 
   private async processMessage(text: string, isHiddenInit: boolean = false) {
-    if (this.isProcessing && !isHiddenInit) return;
+    if ((this.isProcessing || this.isPaused) && !isHiddenInit) return;
     this.isProcessing = true;
 
     // 1. Update Local History & UI

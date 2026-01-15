@@ -8,20 +8,26 @@ export class GeminiClient implements LiveClient {
   private currentInputTranscript = '';
   private currentOutputTranscript = '';
   private audioSampleRate = 16000; // Default
+  private isConnected = false;
+  private isPaused = false;
   
   async connect(callbacks: LiveClientCallbacks, config: LiveConnectionConfig): Promise<void> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     // Use the actual sample rate from the browser context, or fallback to 16000
     this.audioSampleRate = config.audioSampleRate || 16000;
+    this.isConnected = true;
+    this.isPaused = false;
 
     this.sessionPromise = ai.live.connect({
       model: config.modelId || LIVE_MODEL,
       callbacks: {
         onopen: () => {
-          callbacks.onOpen();
+          if (this.isConnected) callbacks.onOpen();
         },
         onmessage: (message: LiveServerMessage) => {
+          if (!this.isConnected || this.isPaused) return;
+
           // Handle Audio Output
           const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64Audio) {
@@ -53,21 +59,28 @@ export class GeminiClient implements LiveClient {
             }
           }
 
-          // Handle Tool Call
+          // Handle Tool Call - OPTIMIZED FOR PARALLEL EXECUTION
           if (message.toolCall) {
-            callbacks.onToolCall?.(message.toolCall.functionCalls);
-            // Send responses back to model to acknowledge
-            message.toolCall.functionCalls.forEach(fc => {
-                this.sessionPromise?.then(session => {
-                    session.sendToolResponse({
-                        functionResponses: {
-                            id: fc.id,
-                            name: fc.name,
-                            response: { result: 'OK' }
-                        }
-                    });
-                });
+            // 1. FAST PATH: Immediately acknowledge to server to unblock audio generation.
+            // We do not wait for the UI to render. We batch responses for efficiency.
+            const functionResponses = message.toolCall.functionCalls.map(fc => ({
+                id: fc.id,
+                name: fc.name,
+                response: { result: 'OK' } // Simple ACK for display tools
+            }));
+
+            // Fire and forget the network response
+            this.sessionPromise?.then(session => {
+                if (this.isConnected) session.sendToolResponse({ functionResponses });
+            }).catch(e => {
+                console.warn("Tool response delivery failed:", e);
             });
+
+            // 2. UI UPDATE PATH: Trigger the UI update callback asynchronously
+            // This ensures the visual board updates "in parallel" with the AI resuming speech
+            setTimeout(() => {
+                if (this.isConnected) callbacks.onToolCall?.(message.toolCall!.functionCalls);
+            }, 0);
           }
 
           // Handle Interruptions
@@ -79,6 +92,7 @@ export class GeminiClient implements LiveClient {
           }
         },
         onclose: () => {
+          this.isConnected = false;
           callbacks.onClose();
         },
         onerror: (err) => {
@@ -101,18 +115,20 @@ export class GeminiClient implements LiveClient {
   }
 
   sendAudio(data: Float32Array): void {
-    if (!this.sessionPromise) return;
+    if (!this.sessionPromise || !this.isConnected || this.isPaused) return;
 
     const b64Data = this.float32ToBase64PCM(data);
     
     this.sessionPromise.then((session) => {
       try {
-        session.sendRealtimeInput({ 
-            media: {
-              data: b64Data,
-              mimeType: `audio/pcm;rate=${this.audioSampleRate}`
-            }
-          });
+        if (this.isConnected && !this.isPaused) {
+            session.sendRealtimeInput({ 
+                media: {
+                data: b64Data,
+                mimeType: `audio/pcm;rate=${this.audioSampleRate}`
+                }
+            });
+        }
       } catch (e) {
           console.warn("Failed to send audio frame - session might be closed", e);
       }
@@ -120,19 +136,30 @@ export class GeminiClient implements LiveClient {
   }
 
   async sendText(text: string): Promise<void> {
-    if (!this.sessionPromise) return;
-    this.sessionPromise.then((session) => {
-        try {
-            // Send text input to the model to prompt a response
-            // We use 'turnComplete: true' to signal the model should reply immediately
+    if (!this.sessionPromise || !this.isConnected) return;
+    try {
+        const session = await this.sessionPromise;
+        // Check if send method exists to prevent crashes if session object is invalid or closed
+        if (this.isConnected && typeof session.send === 'function') {
             session.send({ parts: [{ text: text }], turnComplete: true });
-        } catch (e) {
-            console.warn("Failed to send text input", e);
+        } else {
+            console.warn("Session does not support text input or is not ready.");
         }
-    });
+    } catch (e) {
+        console.warn("Failed to send text input", e);
+    }
+  }
+
+  pause(): void {
+    this.isPaused = true;
+  }
+
+  resume(): void {
+    this.isPaused = false;
   }
 
   disconnect(): void {
+    this.isConnected = false;
     if (this.sessionPromise) {
       this.sessionPromise.then((session) => {
         try {

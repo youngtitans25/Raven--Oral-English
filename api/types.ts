@@ -20,4 +20,6 @@ export interface LiveClient {
   sendAudio(audioData: Float32Array): void;
   sendText(text: string): Promise<void>;
   disconnect(): void;
+  pause(): void;
+  resume(): void;
 }

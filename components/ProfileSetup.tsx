@@ -7,6 +7,7 @@ import {
 import { SubjectSelector } from './ui/SubjectSelector';
 import { Button } from './ui/button';
 import { ArrowRight, Loader2, Sparkles, ChevronDown, Gift, AlertCircle } from 'lucide-react';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 
 interface ProfileSetupProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,12 +19,15 @@ interface ProfileSetupProps {
 const ProfileSetup: React.FC<ProfileSetupProps> = ({ user, onComplete, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [logoError, setLogoError] = useState(false);
   
+  // Check if it's the mock guest user
+  const rawFullName = user.user_metadata?.full_name || '';
+  const isGuestUser = rawFullName === 'Guest Student';
+
   const [formData, setFormData] = useState({
-    // Basic Info
-    firstName: user.user_metadata?.full_name?.split(' ')[0] || '',
-    lastName: user.user_metadata?.full_name?.split(' ')[1] || '',
+    // Basic Info - Clear if guest, otherwise pre-fill
+    firstName: isGuestUser ? '' : (rawFullName.split(' ')[0] || ''),
+    lastName: isGuestUser ? '' : (rawFullName.split(' ')[1] || ''),
     email: user.email || '',
     whatsapp_number: '',
     guardian_number: '',
@@ -202,17 +206,13 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ user, onComplete, onLogout 
             {/* Header */}
             <div className="text-center mb-6 md:mb-8">
                 <div className="relative inline-block mb-4 md:mb-6">
-                    <div className="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-3xl bg-white flex items-center justify-center shadow-lg animate-float p-4 md:p-5">
-                         {!logoError ? (
-                            <img 
-                                src="/logo.png" 
-                                alt="Raven Logo" 
-                                className="w-full h-full object-contain"
-                                onError={() => setLogoError(true)}
-                            />
-                         ) : (
-                            <span className="text-4xl">📚</span>
-                         )}
+                    <div className="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-3xl bg-white flex items-center justify-center shadow-lg animate-float p-4 md:p-5 overflow-hidden">
+                        <ImageWithFallback 
+                            src="/logo.png" 
+                            alt="Raven Logo" 
+                            className="w-full h-full object-contain"
+                            fallbackContent={<span className="text-4xl">📚</span>}
+                        />
                     </div>
                     <div className="absolute -top-1 -right-1 w-8 h-8 rounded-lg bg-gradient-to-br from-earth-400 to-earth-600 flex items-center justify-center shadow-md">
                         <span className="text-sm">🇳🇬</span>

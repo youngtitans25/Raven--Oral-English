@@ -1,10 +1,13 @@
 
+
 export enum SessionStatus {
   IDLE = 'IDLE',
   CONNECTING = 'CONNECTING',
   CONNECTED = 'CONNECTED',
   ERROR = 'ERROR',
-  ENDED = 'ENDED'
+  ENDED = 'ENDED',
+  RECONNECTING = 'RECONNECTING',
+  PAUSED = 'PAUSED'
 }
 
 export interface AudioConfig {
@@ -24,6 +27,34 @@ export type AppView = 'LOADING' | 'LANDING' | 'PROFILE_SETUP' | 'DASHBOARD' | 'E
 export type StudentCategory = 'Science' | 'Arts' | 'Commercial';
 
 export type StudentGoal = 'find-partner' | 'help-others';
+
+// --- MEMORY & PERSISTENCE TYPES ---
+
+export interface SessionRecord {
+  id: string;
+  student_id: string;
+  subject: string;
+  topic?: string;
+  start_time: string;
+  end_time?: string;
+  duration_seconds?: number;
+  status: 'completed' | 'aborted' | 'active';
+}
+
+export interface InteractionRecord {
+  session_id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  metadata?: Record<string, any>; // For sentiment, feelings, or tool specific data
+}
+
+export interface LearningItemRecord {
+  session_id: string;
+  term: string;
+  context: string; // The sentence or explanation provided
+  timestamp: string;
+}
 
 // --- PLATFORM TYPES ---
 
