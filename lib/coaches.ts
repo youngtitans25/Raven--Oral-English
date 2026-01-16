@@ -38,6 +38,7 @@ export { ARABIC_SECTIONS } from './coaches/subjects/arabic';
 export { ART_SECTIONS } from './coaches/subjects/art';
 export { BIOLOGY_SECTIONS } from './coaches/subjects/biology';
 export { CHEMISTRY_SECTIONS } from './coaches/subjects/chemistry';
+export { ACCOUNTS_SECTIONS } from './coaches/subjects/accounts';
 export { BASE_INSTRUCTION } from './coaches/base';
 
 export interface CoachConfig {

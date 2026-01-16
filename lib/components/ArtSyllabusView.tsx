@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Palette, Paintbrush, Monitor, Globe, Play, Sparkles, ChevronRight, Layers, PenTool, Eye } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -12,6 +12,10 @@ interface ArtSyllabusViewProps {
 
 const ArtSyllabusView: React.FC<ArtSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedSectionId]);
 
   const activeSection = selectedSectionId 
     ? ART_SECTIONS.find(s => s.id === selectedSectionId) 

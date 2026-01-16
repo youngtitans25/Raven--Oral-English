@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Languages, PenTool, FileText, Library, Play, Sparkles, ChevronRight, Layers } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -12,6 +12,10 @@ interface ArabicSyllabusViewProps {
 
 const ArabicSyllabusView: React.FC<ArabicSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedSectionId]);
 
   const activeSection = selectedSectionId 
     ? ARABIC_SECTIONS.find(s => s.id === selectedSectionId) 

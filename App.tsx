@@ -18,6 +18,7 @@ import ArabicSyllabusView from './lib/components/ArabicSyllabusView';
 import ArtSyllabusView from './lib/components/ArtSyllabusView';
 import BiologySyllabusView from './lib/components/BiologySyllabusView';
 import ChemistrySyllabusView from './lib/components/ChemistrySyllabusView';
+import AccountsSyllabusView from './lib/components/AccountsSyllabusView';
 import PrivacyPolicy from './lib/components/PrivacyPolicy';
 import TermsOfService from './lib/components/TermsOfService';
 
@@ -54,6 +55,11 @@ const App: React.FC = () => {
   // Combine error messages
   const [globalError, setGlobalError] = useState<string | null>(sessionError);
 
+  // Scroll to top on view change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
   // Update global error if session error changes
   useEffect(() => {
     if (sessionError) setGlobalError(sessionError);
@@ -83,6 +89,8 @@ const App: React.FC = () => {
          setView('BIOLOGY_SYLLABUS');
       } else if (normSubject === 'Chemistry') {
          setView('CHEMISTRY_SYLLABUS');
+      } else if (normSubject === 'Principles of Accounts') {
+         setView('ACCOUNTS_SYLLABUS');
       } else {
          setView('DASHBOARD');
       }
@@ -158,6 +166,10 @@ const App: React.FC = () => {
         }
         if (normSubject === 'Chemistry') {
             setView('CHEMISTRY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Principles of Accounts') {
+            setView('ACCOUNTS_SYLLABUS');
             return;
         }
     }
@@ -300,6 +312,15 @@ const App: React.FC = () => {
           <ChemistrySyllabusView 
             onBack={() => setView('DASHBOARD')}
             onStartSection={(sectionId) => handleStartSession('Chemistry', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'ACCOUNTS_SYLLABUS') {
+      return (
+          <AccountsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Principles of Accounts', sectionId)}
           />
       );
   }

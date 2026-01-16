@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Dna, Microscope, Leaf, Bird, Play, Sparkles, ChevronRight, Layers } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calculator, Briefcase, Building, Play, Sparkles, ChevronRight, Layers, Landmark } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { BIOLOGY_SECTIONS } from '../coaches';
+import { ACCOUNTS_SECTIONS } from '../coaches';
 import { ImageWithFallback } from './ui/ImageWithFallback';
 
-interface BiologySyllabusViewProps {
+interface AccountsSyllabusViewProps {
   onBack: () => void;
   onStartSection: (sectionId: string) => void;
 }
 
-const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onStartSection }) => {
+const AccountsSyllabusView: React.FC<AccountsSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
   }, [selectedSectionId]);
 
   const activeSection = selectedSectionId 
-    ? BIOLOGY_SECTIONS.find(s => s.id === selectedSectionId) 
+    ? ACCOUNTS_SECTIONS.find(s => s.id === selectedSectionId) 
     : null;
 
   const handleBack = () => {
@@ -33,18 +33,23 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
     <div className="animate-fade-in">
         <div className="text-center mb-8 md:mb-12 max-w-2xl mx-auto">
             <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-900 mb-2 md:mb-4">
-                Explore the <span className="text-emerald-600">Science of Life</span>.
+                Master the <span className="text-blue-700">Books</span>.
             </h1>
             <p className="text-slate-600 text-sm md:text-lg">
-                Understand the variety of organisms, from microscopic cells to complex adaptations.
+                Explore Financial Accounting, Bookkeeping, Partnerships, Company Accounts, and Public Sector Accounting.
             </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-            {BIOLOGY_SECTIONS.map((section, index) => {
-                let Icon = Dna;
-                const colorClass = "text-emerald-600";
-                const bgClass = "bg-emerald-500/5";
+            {ACCOUNTS_SECTIONS.map((section, index) => {
+                let Icon = BookOpen;
+                let colorClass = "text-blue-700";
+                let bgClass = "bg-blue-500/5";
+
+                if (section.id.includes('topic-2')) { Icon = Calculator; colorClass = "text-emerald-700"; bgClass = "bg-emerald-500/5"; }
+                if (section.id.includes('topic-3')) { Icon = Layers; colorClass = "text-indigo-700"; bgClass = "bg-indigo-500/5"; }
+                if (section.id.includes('topic-4')) { Icon = Building; colorClass = "text-orange-700"; bgClass = "bg-orange-500/5"; }
+                if (section.id.includes('topic-5')) { Icon = Briefcase; colorClass = "text-slate-700"; bgClass = "bg-slate-500/5"; }
 
                 return (
                     <div 
@@ -90,8 +95,12 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
   const renderDetailView = () => {
     if (!activeSection) return null;
 
-    const themeColor = "text-emerald-600";
-    const bgTheme = "bg-emerald-50";
+    let themeColor = "text-blue-700";
+    let bgTheme = "bg-blue-50";
+    if (activeSection.id.includes('topic-2')) { themeColor = "text-emerald-700"; bgTheme = "bg-emerald-50"; }
+    if (activeSection.id.includes('topic-3')) { themeColor = "text-indigo-700"; bgTheme = "bg-indigo-50"; }
+    if (activeSection.id.includes('topic-4')) { themeColor = "text-orange-700"; bgTheme = "bg-orange-50"; }
+    if (activeSection.id.includes('topic-5')) { themeColor = "text-slate-700"; bgTheme = "bg-slate-50"; }
 
     return (
         <div className="animate-slide-up">
@@ -103,49 +112,43 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
                     {activeSection.title.split(':')[1]}
                 </h1>
                 <p className="text-slate-600 text-sm md:text-base">
-                    Select a topic below to start your Biology session.
+                    Select a topic below to start your Accounts session.
                 </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {activeSection.subModules?.map((module, index) => {
-                    let ModuleIcon = Microscope;
-                    if (module.id.includes('evolution')) ModuleIcon = Leaf;
-                    if (module.id.includes('adaptations')) ModuleIcon = Bird;
+                {activeSection.subModules?.map((module, index) => (
+                    <Card 
+                        key={module.id}
+                        className={`group hover:border-current transition-all cursor-pointer overflow-hidden border-slate-200 ${themeColor}`}
+                        onClick={() => onStartSection(module.id)}
+                    >
+                        <div className="flex flex-row sm:flex-col h-full text-slate-900">
+                             {/* Image side */}
+                             <div className="w-1/3 sm:w-full h-auto sm:h-40 overflow-hidden relative shrink-0">
+                                <ImageWithFallback 
+                                    src={module.image} 
+                                    alt={module.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
+                            </div>
 
-                    return (
-                        <Card 
-                            key={module.id}
-                            className={`group hover:border-current transition-all cursor-pointer overflow-hidden border-slate-200 ${themeColor}`}
-                            onClick={() => onStartSection(module.id)}
-                        >
-                            <div className="flex flex-row sm:flex-col h-full text-slate-900">
-                                 {/* Image side */}
-                                 <div className="w-1/3 sm:w-full h-auto sm:h-40 overflow-hidden relative shrink-0">
-                                    <ImageWithFallback 
-                                        src={module.image} 
-                                        alt={module.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
-                                </div>
-
-                                {/* Content side */}
-                                <div className="w-2/3 sm:w-full p-4 md:p-5 flex flex-col justify-center">
-                                    <h3 className="font-bold text-slate-900 mb-1 text-sm md:text-base group-hover:text-current transition-colors line-clamp-2">
-                                        {module.title}
-                                    </h3>
-                                    <p className="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2 sm:line-clamp-3">
-                                        {module.description}
-                                    </p>
-                                    <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-current uppercase tracking-wider transition-colors">
-                                        <Play className="w-3 h-3 mr-1 fill-current" /> Start Lesson
-                                    </div>
+                            {/* Content side */}
+                            <div className="w-2/3 sm:w-full p-4 md:p-5 flex flex-col justify-center">
+                                <h3 className="font-bold text-slate-900 mb-1 text-sm md:text-base group-hover:text-current transition-colors line-clamp-2">
+                                    {module.title}
+                                </h3>
+                                <p className="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2 sm:line-clamp-3">
+                                    {module.description}
+                                </p>
+                                <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-current uppercase tracking-wider transition-colors">
+                                    <Play className="w-3 h-3 mr-1 fill-current" /> Start Lesson
                                 </div>
                             </div>
-                        </Card>
-                    );
-                })}
+                        </div>
+                    </Card>
+                ))}
             </div>
         </div>
     );
@@ -155,14 +158,14 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
-        <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-emerald-600 text-sm">
+        <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-blue-700 text-sm">
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" /> 
             {selectedSectionId ? 'Back to Sections' : 'Back to Dashboard'}
         </Button>
         <div className="flex items-center gap-2 text-slate-800">
-            <Layers className="w-4 h-4 md:w-5 md:h-5 text-emerald-600" />
+            <Layers className="w-4 h-4 md:w-5 md:h-5 text-blue-700" />
             <span className="font-display font-bold text-sm md:text-lg">
-                Biology <span className="text-slate-300 mx-1 md:mx-2">/</span> <span className="text-emerald-600">{selectedSectionId ? activeSection?.title.split(':')[0] : 'Syllabus'}</span>
+                Accounts <span className="text-slate-300 mx-1 md:mx-2">/</span> <span className="text-blue-700">{selectedSectionId ? activeSection?.title.split(':')[0] : 'Syllabus'}</span>
             </span>
         </div>
       </header>
@@ -173,9 +176,9 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
         {/* Footer Info */}
         {!selectedSectionId && (
             <div className="mt-12 md:mt-16 text-center animate-fade-in">
-                <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium border border-emerald-100 max-w-full text-left">
+                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-2 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium border border-blue-100 max-w-full text-left">
                     <Sparkles className="w-4 h-4 shrink-0" />
-                    <span>Master the principles of Life Sciences.</span>
+                    <span>Master the principles of Financial Accounting.</span>
                 </div>
             </div>
         )}
@@ -184,4 +187,4 @@ const BiologySyllabusView: React.FC<BiologySyllabusViewProps> = ({ onBack, onSta
   );
 };
 
-export default BiologySyllabusView;
+export default AccountsSyllabusView;

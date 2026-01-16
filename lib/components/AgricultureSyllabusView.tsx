@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Sprout, Tractor, Leaf, Dna, Play, Sparkles, ChevronRight, Layers } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -12,6 +12,10 @@ interface AgricultureSyllabusViewProps {
 
 const AgricultureSyllabusView: React.FC<AgricultureSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedSectionId]);
 
   const activeSection = selectedSectionId 
     ? AGRICULTURE_SECTIONS.find(s => s.id === selectedSectionId) 

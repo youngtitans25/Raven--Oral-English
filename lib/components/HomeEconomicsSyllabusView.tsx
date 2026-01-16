@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Home, Utensils, Scissors, Play, Sparkles, ChevronRight, Layers } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -12,6 +12,10 @@ interface HomeEconomicsSyllabusViewProps {
 
 const HomeEconomicsSyllabusView: React.FC<HomeEconomicsSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedSectionId]);
 
   // Get the currently selected section data object
   const activeSection = selectedSectionId 
