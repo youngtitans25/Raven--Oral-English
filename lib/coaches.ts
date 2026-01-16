@@ -31,6 +31,13 @@ import { YORUBA_INSTRUCTION } from './coaches/subjects/yoruba';
 
 // Re-export constants and types for use in components
 export { ENGLISH_SECTIONS } from './coaches/subjects/english';
+export { HOME_ECONOMICS_SECTIONS } from './coaches/subjects/home_economics';
+export { GOVERNMENT_SECTIONS } from './coaches/subjects/government';
+export { AGRICULTURE_SECTIONS } from './coaches/subjects/agriculture';
+export { ARABIC_SECTIONS } from './coaches/subjects/arabic';
+export { ART_SECTIONS } from './coaches/subjects/art';
+export { BIOLOGY_SECTIONS } from './coaches/subjects/biology';
+export { CHEMISTRY_SECTIONS } from './coaches/subjects/chemistry';
 export { BASE_INSTRUCTION } from './coaches/base';
 
 export interface CoachConfig {

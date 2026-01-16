@@ -1,5 +1,8 @@
 import { StudentProfile } from '../../types';
 import { BASE_INSTRUCTION } from '../base';
+import { getSectionAInstruction } from './english/section_a';
+import { getSectionBInstruction } from './english/section_b';
+import { getSectionCInstruction } from './english/section_c';
 
 export const ENGLISH_SECTIONS = [
   {
@@ -114,127 +117,20 @@ export const ENGLISH_SECTIONS = [
 
 export const ENGLISH_INSTRUCTION = (profile: StudentProfile, topic?: string) => {
   const base = BASE_INSTRUCTION(profile);
+  
+  if (!topic) return `${base} **FOCUS:** General English Revision. Ask the student which section they would like to focus on.`;
 
-  // --- SECTION A ---
-  if (topic === 'english-section-a-lekki-headmaster') {
-    return `${base}
-**TOPIC: THE LEKKI HEADMASTER (Novel)**
-- Focus on characters, the setting, and themes.
-- Ask questions about the plot and key events.
-- Ask specific questions to test if the student has read the book.
-- Discuss moral lessons and character analysis relevant to the JAMB syllabus.
-`;
-  }
-  if (topic === 'english-section-a-comprehension') {
-    return `${base}
-**TOPIC: COMPREHENSION PASSAGES**
-- Use 'display_content' to show a short paragraph (150-200 words).
-- Ask the student to identify the **Main Idea**.
-- Ask for **Implied Meanings** (Inference).
-- Ask for the meaning of specific words based on context.
-`;
-  }
-  if (topic === 'english-section-a-summary') {
-    return `${base}
-**TOPIC: SUMMARY WRITING**
-- Teach synthesis: combining distinct pieces of information.
-- Give the student a paragraph and ask them to summarize it in ONE sentence.
-- Focus on removing adjectives and examples, keeping only the core point.
-`;
-  }
+  // Delegate to modular instruction handlers
+  const instructionA = getSectionAInstruction(profile, topic, base);
+  if (instructionA) return instructionA;
 
-  // --- SECTION B ---
-  if (topic === 'english-section-b-synonyms') {
-    return `${base}
-**TOPIC: SYNONYMS**
-- Use 'display_content' to show a sentence with a bolded word.
-- Ask the student to choose the word nearest in meaning from a list you provide verbally or visually.
-- Explain *why* the answer fits the specific context.
-`;
-  }
-  if (topic === 'english-section-b-antonyms') {
-    return `${base}
-**TOPIC: ANTONYMS**
-- Focus on words opposite in meaning.
-- Remember: In JAMB, the answer must be the *most direct* opposite in the given context.
-`;
-  }
-  if (topic === 'english-section-b-concord') {
-    return `${base}
-**TOPIC: CONCORD & AGREEMENT**
-- Focus on Subject-Verb agreement.
-- tricky cases: "The teacher, as well as the students, _____ (is/are) coming." (Answer: is).
-- Test question tags: "He is a boy, _____?" (isn't he?).
-`;
-  }
-  if (topic === 'english-section-b-idioms') {
-    return `${base}
-**TOPIC: IDIOMS & FIGURATIVE USAGE**
-- Focus on Standard British English idioms.
-- Example: "To kick the bucket" (To die). "To let the cat out of the bag" (To reveal a secret).
-- Use 'display_content' to show an idiom and ask for its interpretation.
-`;
-  }
-  if (topic === 'english-section-b-mechanics') {
-    return `${base}
-**TOPIC: MECHANICS (SPELLING)**
-- Test commonly misspelled words in JAMB (e.g., 'Embarrassment', 'Accommodation', 'Privilege').
-- Pronounce a word and ask the student to spell it, or display two spellings and ask which is correct.
-`;
-  }
+  const instructionB = getSectionBInstruction(profile, topic, base);
+  if (instructionB) return instructionB;
 
-  // --- SECTION B ---
-  if (topic === 'english-section-b-structure') {
-    return `${base}
-**TOPIC: SENTENCE STRUCTURE & CLAUSES**
-- Focus on identifying phrases and clauses (Noun, Adjectival, Adverbial).
-- Teach sentence types: Simple, Compound, Complex, Compound-Complex.
-- Analyze grammatical functions of words in sentences.
-`;
-  }
+  const instructionC = getSectionCInstruction(profile, topic, base);
+  if (instructionC) return instructionC;
 
-  // --- SECTION C ---
-  if (topic === 'english-section-c-vowels') {
-    return `${base}
-**TOPIC: VOWEL SOUNDS**
-- Focus on distinguishing Monothongs (short vs long vowels) and Diphthongs.
-- Example: bit /ɪ/ vs beat /i:/.
-- Use 'display_content' to show a word and the phonetic symbol.
-- Ask the student to pronounce words to verify they can make the distinction.
-`;
-  }
-  if (topic === 'english-section-c-consonants') {
-    return `${base}
-**TOPIC: CONSONANT SOUNDS**
-- Focus on silent letters (e.g., 'Comb' - b is silent) and clusters.
-- Focus on difficult sounds like /θ/ (think) vs /ð/ (this).
-`;
-  }
-  if (topic === 'english-section-c-rhymes') {
-    return `${base}
-**TOPIC: RHYMES**
-- Present a word and ask which option rhymes with it.
-- Example: "Plough" rhymes with "Cow", not "Rough".
-`;
-  }
-  if (topic === 'english-section-c-stress') {
-    return `${base}
-**TOPIC: WORD STRESS**
-- Teach the rules for 2-syllable nouns (stress on 1st) vs verbs (stress on 2nd).
-- Example: PRE-sent (gift) vs pre-SENT (to give).
-- Use 'display_content' to show the word and ask where the stress lies.
-`;
-  }
-  if (topic === 'english-section-c-emphatic') {
-    return `${base}
-**TOPIC: EMPHATIC STRESS**
-- Explain that the word written in CAPITAL letters is the one being emphasized.
-- The correct question to an emphatic statement is the one that questions the *emphasized word*.
-- Example Statement: "JOHN stole the book." -> Question: "Did Mary steal the book?" (Correct).
-`;
-  }
-
-  // Generic fallback for the Section parents if selected directly
+  // Generic fallback for Section parents if selected directly
   if (topic === 'english-section-a') return `${base} **FOCUS:** General overview of Section A (Comprehension & The Lekki Headmaster). Ask the student what specific part they want to practice.`;
   if (topic === 'english-section-b') return `${base} **FOCUS:** General overview of Section B (Lexis & Structure). Ask the student to pick a topic (Synonyms, Idioms, etc.).`;
   if (topic === 'english-section-c') return `${base} **FOCUS:** General overview of Section C (Oral Forms). Ask the student if they want to practice Vowels, Consonants, or Stress.`;

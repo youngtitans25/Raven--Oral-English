@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { StudentProfile, SessionStatus, AppView } from './types';
-import { useLiveSession } from './hooks/useLiveSession';
+import { StudentProfile, SessionStatus, AppView } from '../../types';
+import { useLiveSession } from '../../hooks/useLiveSession';
 import { Loader2 } from 'lucide-react';
-import { Button } from './lib/components/ui/button';
-import { ImageWithFallback } from './lib/components/ui/ImageWithFallback';
+import { Button } from './ui/button';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 
 // Screens
-import LandingPage from './lib/components/LandingPage';
-import ProfileSetup from './lib/components/ProfileSetup';
-import Dashboard from './lib/components/Dashboard';
-import LiveSessionView from './lib/components/LiveSessionView';
-import EnglishSyllabusView from './lib/components/EnglishSyllabusView';
-import HomeEconomicsSyllabusView from './lib/components/HomeEconomicsSyllabusView';
-import GovernmentSyllabusView from './lib/components/GovernmentSyllabusView';
-import AgricultureSyllabusView from './lib/components/AgricultureSyllabusView';
-import ArabicSyllabusView from './lib/components/ArabicSyllabusView';
-import ArtSyllabusView from './lib/components/ArtSyllabusView';
-import BiologySyllabusView from './lib/components/BiologySyllabusView';
-import ChemistrySyllabusView from './lib/components/ChemistrySyllabusView';
-import PrivacyPolicy from './lib/components/PrivacyPolicy';
-import TermsOfService from './lib/components/TermsOfService';
+import LandingPage from './LandingPage';
+import ProfileSetup from './ProfileSetup';
+import Dashboard from './Dashboard';
+import LiveSessionView from './LiveSessionView';
+import EnglishSyllabusView from './EnglishSyllabusView';
+import HomeEconomicsSyllabusView from './HomeEconomicsSyllabusView';
+import GovernmentSyllabusView from './GovernmentSyllabusView';
+import AgricultureSyllabusView from './AgricultureSyllabusView';
+import ArabicSyllabusView from './ArabicSyllabusView';
+import ArtSyllabusView from './ArtSyllabusView';
+import BiologySyllabusView from './BiologySyllabusView';
+import ChemistrySyllabusView from './ChemistrySyllabusView';
+import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfService from './TermsOfService';
 
 // Wrapper for consistency
 const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
