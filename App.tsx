@@ -19,6 +19,22 @@ import ArtSyllabusView from './lib/components/ArtSyllabusView';
 import BiologySyllabusView from './lib/components/BiologySyllabusView';
 import ChemistrySyllabusView from './lib/components/ChemistrySyllabusView';
 import AccountsSyllabusView from './lib/components/AccountsSyllabusView';
+import CRSSyllabusView from './lib/components/CRSSyllabusView';
+import CommerceSyllabusView from './lib/components/CommerceSyllabusView';
+import ComputerSyllabusView from './lib/components/ComputerSyllabusView';
+import EconomicsSyllabusView from './lib/components/EconomicsSyllabusView';
+import FrenchSyllabusView from './lib/components/FrenchSyllabusView';
+import GeographySyllabusView from './lib/components/GeographySyllabusView';
+import HausaSyllabusView from './lib/components/HausaSyllabusView';
+import HistorySyllabusView from './lib/components/HistorySyllabusView';
+import IgboSyllabusView from './lib/components/IgboSyllabusView';
+import IRSSyllabusView from './lib/components/IRSSyllabusView';
+import LiteratureSyllabusView from './lib/components/LiteratureSyllabusView';
+import MathematicsSyllabusView from './lib/components/MathematicsSyllabusView';
+import MusicSyllabusView from './lib/components/MusicSyllabusView';
+import PHESyllabusView from './lib/components/PHESyllabusView';
+import PhysicsSyllabusView from './lib/components/PhysicsSyllabusView';
+import YorubaSyllabusView from './lib/components/YorubaSyllabusView';
 import PrivacyPolicy from './lib/components/PrivacyPolicy';
 import TermsOfService from './lib/components/TermsOfService';
 
@@ -91,6 +107,38 @@ const App: React.FC = () => {
          setView('CHEMISTRY_SYLLABUS');
       } else if (normSubject === 'Principles of Accounts') {
          setView('ACCOUNTS_SYLLABUS');
+      } else if (normSubject === 'Christian Religious Studies') {
+         setView('CRS_SYLLABUS');
+      } else if (normSubject === 'Commerce') {
+         setView('COMMERCE_SYLLABUS');
+      } else if (normSubject === 'Computer Studies') {
+         setView('COMPUTER_SYLLABUS');
+      } else if (normSubject === 'Economics') {
+         setView('ECONOMICS_SYLLABUS');
+      } else if (normSubject === 'French') {
+         setView('FRENCH_SYLLABUS');
+      } else if (normSubject === 'Geography') {
+         setView('GEOGRAPHY_SYLLABUS');
+      } else if (normSubject === 'Hausa') {
+         setView('HAUSA_SYLLABUS');
+      } else if (normSubject === 'History') {
+         setView('HISTORY_SYLLABUS');
+      } else if (normSubject === 'Igbo') {
+         setView('IGBO_SYLLABUS');
+      } else if (normSubject === 'Islamic Studies') {
+         setView('IRS_SYLLABUS');
+      } else if (normSubject === 'Literature-In-English') {
+         setView('LITERATURE_SYLLABUS');
+      } else if (normSubject === 'Mathematics') {
+         setView('MATHEMATICS_SYLLABUS');
+      } else if (normSubject === 'Music') {
+         setView('MUSIC_SYLLABUS');
+      } else if (normSubject === 'Physical and Health Education') {
+         setView('PHE_SYLLABUS');
+      } else if (normSubject === 'Physics') {
+         setView('PHYSICS_SYLLABUS');
+      } else if (normSubject === 'Yoruba') {
+         setView('YORUBA_SYLLABUS');
       } else {
          setView('DASHBOARD');
       }
@@ -170,6 +218,70 @@ const App: React.FC = () => {
         }
         if (normSubject === 'Principles of Accounts') {
             setView('ACCOUNTS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Christian Religious Studies') {
+            setView('CRS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Commerce') {
+            setView('COMMERCE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Computer Studies') {
+            setView('COMPUTER_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Economics') {
+            setView('ECONOMICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'French') {
+            setView('FRENCH_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Geography') {
+            setView('GEOGRAPHY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Hausa') {
+            setView('HAUSA_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'History') {
+            setView('HISTORY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Igbo') {
+            setView('IGBO_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Islamic Studies') {
+            setView('IRS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Literature-In-English') {
+            setView('LITERATURE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Mathematics') {
+            setView('MATHEMATICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Music') {
+            setView('MUSIC_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Physical and Health Education') {
+            setView('PHE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Physics') {
+            setView('PHYSICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Yoruba') {
+            setView('YORUBA_SYLLABUS');
             return;
         }
     }
@@ -321,6 +433,150 @@ const App: React.FC = () => {
           <AccountsSyllabusView 
             onBack={() => setView('DASHBOARD')}
             onStartSection={(sectionId) => handleStartSession('Principles of Accounts', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'CRS_SYLLABUS') {
+      return (
+          <CRSSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Christian Religious Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'COMMERCE_SYLLABUS') {
+      return (
+          <CommerceSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Commerce', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'COMPUTER_SYLLABUS') {
+      return (
+          <ComputerSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Computer Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'ECONOMICS_SYLLABUS') {
+      return (
+          <EconomicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Economics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'FRENCH_SYLLABUS') {
+      return (
+          <FrenchSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('French', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'GEOGRAPHY_SYLLABUS') {
+      return (
+          <GeographySyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Geography', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'HAUSA_SYLLABUS') {
+      return (
+          <HausaSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Hausa', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'HISTORY_SYLLABUS') {
+      return (
+          <HistorySyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('History', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'IGBO_SYLLABUS') {
+      return (
+          <IgboSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Igbo', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'IRS_SYLLABUS') {
+      return (
+          <IRSSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Islamic Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'LITERATURE_SYLLABUS') {
+      return (
+          <LiteratureSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Literature-In-English', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'MATHEMATICS_SYLLABUS') {
+      return (
+          <MathematicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Mathematics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'MUSIC_SYLLABUS') {
+      return (
+          <MusicSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Music', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'PHE_SYLLABUS') {
+      return (
+          <PHESyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Physical and Health Education', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'PHYSICS_SYLLABUS') {
+      return (
+          <PhysicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Physics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'YORUBA_SYLLABUS') {
+      return (
+          <YorubaSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Yoruba', sectionId)}
           />
       );
   }

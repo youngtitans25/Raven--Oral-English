@@ -1,76 +1,69 @@
 import { StudentProfile } from '../../types';
 import { BASE_INSTRUCTION } from '../base';
+import { getPart1Instruction } from './irs/part_1';
+import { getPart2Instruction } from './irs/part_2';
+import { getPart3Instruction } from './irs/part_3';
 
-export const IRS_INSTRUCTION = (p: StudentProfile) => `${BASE_INSTRUCTION(p)}
+export const IRS_SECTIONS = [
+  {
+    id: 'irs-section-1',
+    title: 'Part 1: The Qur\'an and Hadith',
+    description: 'Revelation, Preservation, Tafsir, Tajwid, and Hadith Studies.',
+    image: 'https://images.unsplash.com/photo-1585036156171-4053915a1c7a?q=80&w=1000&auto=format&fit=crop',
+    subModules: [
+      { id: 'irs-quran-revelation', title: 'Revelation of Qur\'an', description: 'Cave Hira, Modes, Piecemeal revelation.' },
+      { id: 'irs-quran-preservation', title: 'Preservation & Authenticity', description: 'Compilation, Standardization, Divine protection.' },
+      { id: 'irs-tafsir-tajwid', title: 'Tafsir & Tajwid', description: 'History, Types, and Importance.' },
+      { id: 'irs-surahs', title: 'Selected Surahs', description: 'Study of text, translation and lessons.' },
+      { id: 'irs-hadith-intro', title: 'Introduction to Hadith', description: 'History, Authentication, Collectors.' },
+      { id: 'irs-hadith-study', title: 'Study of Hadith', description: 'An-Nawawi\'s collection.' },
+      { id: 'irs-moral-lessons', title: 'Moral Lessons', description: 'Parental duty, Honesty, Prohibitions.' }
+    ]
+  },
+  {
+    id: 'irs-section-2',
+    title: 'Part 2: Tawhid and Fiqh',
+    description: 'Faith, Articles of Faith, Worship (Ibadat), and Family Law.',
+    image: 'https://images.unsplash.com/photo-1564121211835-e88c852648ab?q=80&w=1000&auto=format&fit=crop',
+    subModules: [
+      { id: 'irs-faith-tawhid', title: 'Faith (Tawhid)', description: 'Kalimatush-Shahadah, Shirk, Superstition.' },
+      { id: 'irs-articles-faith', title: 'Articles of Faith', description: 'Belief in Allah, Angels, Books, Prophets.' },
+      { id: 'irs-ibadat', title: 'Ibadat (Worship)', description: 'Salah, Zakah, Sawm, Hajj, Jihad.' },
+      { id: 'irs-family', title: 'Family Matters', description: 'Marriage, Divorce, Inheritance.' },
+      { id: 'irs-law-sources', title: 'Sources of Law', description: 'Qur\'an, Sunnah, Ijma, Qiyas, Schools.' },
+      { id: 'irs-economic-political', title: 'Economic & Political Systems', description: 'Riba, Justice, Shurah.' }
+    ]
+  },
+  {
+    id: 'irs-section-3',
+    title: 'Part 3: Islamic History & Civilization',
+    description: 'Pre-Islamic Arabia, Life of Prophet, Caliphs, and Islam in Africa.',
+    image: 'https://images.unsplash.com/photo-1565552629477-09be6311797a?q=80&w=1000&auto=format&fit=crop',
+    subModules: [
+      { id: 'irs-history-prophet', title: 'Life of Prophet Muhammad', description: 'Birth, Mission, Hijrah, Battles.' },
+      { id: 'irs-caliphs', title: 'Rightly Guided Caliphs', description: 'Lives and contributions.' },
+      { id: 'irs-west-africa', title: 'Islam in West Africa', description: 'Spread, Impact on Empires.' },
+      { id: 'irs-education', title: 'Contributions to Education', description: 'Institutions, Scholars (Ibn Sina, etc.).' }
+    ]
+  }
+];
+
+export const IRS_INSTRUCTION = (profile: StudentProfile, topic?: string) => {
+  const base = BASE_INSTRUCTION(profile);
+
+  if (!topic) return `${base} **SUBJECT: ISLAMIC STUDIES**\n**FOCUS:** General revision across Qur'an, Hadith, Fiqh, and History.`;
+
+  const instruction1 = getPart1Instruction(profile, topic, base);
+  if (instruction1) return instruction1;
+
+  const instruction2 = getPart2Instruction(profile, topic, base);
+  if (instruction2) return instruction2;
+
+  const instruction3 = getPart3Instruction(profile, topic, base);
+  if (instruction3) return instruction3;
+
+  return `${base}
 **SUBJECT: ISLAMIC STUDIES**
-
-## CORE FOCUS AREAS (JAMB Syllabus)
-1. **Qur'anic Studies**: Key themes, historical context, and practical application
-2. **Hadith**: Authentication methods, thematic understanding, and contemporary relevance
-3. **Fiqh (Jurisprudence)**: Foundational principles, comparative rulings, and modern applications
-4. **Islamic History**: Chronological developments, socio-political contexts, and lessons for contemporary society
-
-## PEDAGOGICAL FRAMEWORK (Addressing Identified Challenges)
-
-### 1. Foundation Building Protocol
-- **Structured Progression**: Each topic begins with essential concepts before advancing
-- **Concept Mapping**: Visual connections between related topics (e.g., Qur'anic verses → Hadith → Fiqh rulings)
-- **Diagnostic Checkpoints**: Regular assessments to identify and remediate knowledge gaps
-- **Vocabulary First**: Mastery of key Arabic terms and their contextual meanings
-
-### 2. Theory-to-Application Bridge
-- **Case Study Method**: Real-world scenarios requiring application of Islamic principles
-- **Comparative Analysis**: Contrast historical applications with contemporary situations
-- **Practical Fiqh Labs**: Step-by-step application of jurisprudential reasoning
-- **Past Question Deconstruction**: Not just solving, but explaining the "why" behind each answer
-
-### 3. Consistent Learning Methodology
-- **Three-Phase Approach** for each topic:
-  1. **Acquisition** (Concepts & Definitions)
-  2. **Internalization** (Connections & Context)
-  3. **Application** (Problem-Solving & Analysis)
-- **Stable Assessment Criteria**: Consistent rubrics for evaluating understanding vs. memorization
-- **Spaced Repetition Schedule**: Systematic review intervals to reinforce retention
-- **Error Pattern Analysis**: Track misconceptions to prevent repeated mistakes
-
-## SPECIFIC ADJUSTMENTS FOR ${p.academicLevel || 'YOUR CURRENT LEVEL'}
-
-### Knowledge Consolidation Strategies
-- Create thematic clusters (e.g., "Worship," "Transactions," "Social Relations")
-- Use mnemonic devices for chronological events and legal classifications
-- Develop personal analogies connecting abstract concepts to familiar experiences
-
-### Performance Enhancement Tactics
-- **Two-Part Answer Format** for all practice questions:
-  1. Theoretical basis (citing sources)
-  2. Practical implication/application
-- Timed simulations under exam conditions
-- Peer teaching exercises to solidify understanding
-
-### Policy Stability Measures
-- **Weekly Learning Cycles** with predictable structure:
-  - Monday: Concept Introduction
-  - Wednesday: Application Exercises
-  - Friday: Review & Assessment
-- Clear success criteria for each module completion
-- Progress tracking against standardized benchmarks
-
-## REMEDIATION PROTOCOLS
-
-If understanding gaps persist:
-1. Return to foundational texts with guided annotations
-2. Simplified version → Intermediate → Advanced progression
-3. One-on-one concept clarification sessions
-
-If application difficulties continue:
-1. Step-by-step breakdown of reasoning processes
-2. Model answers with highlighted decision points
-3. Graduated difficulty in practice scenarios
-
-## RESOURCE UTILIZATION
-- Primary Sources: Focus on frequently cited Qur'anic verses and Hadith
-- Secondary Sources: Standard JAMB-recommended textbooks
-- Supplementary: Historical timelines and comparative jurisprudence charts
-
-**Remember**: Islamic Studies mastery requires connecting divine principles (Thabat) with contextual application (Murunah). Focus on understanding the 'why' behind every ruling and the wisdom in historical developments.
+**FOCUS:** General revision.
 `;
+};

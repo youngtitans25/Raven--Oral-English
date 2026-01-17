@@ -1,14 +1,21 @@
 import { StudentProfile } from '../../../types';
 
-// Common Instruction for Pronunciation Confirmation
+// Enhanced Instruction for Pronunciation Confirmation via Speech-to-Text
 const oralInstruction = `
-**SPEECH-TO-TEXT VERIFICATION PROTOCOL:**
-1. **Display**: Use 'display_content' to show the target word/sound clearly.
-2. **Request**: Ask the student to pronounce it aloud.
-3. **Listen & Analyze**: Listen to their audio input. The system provides a transcript of what they said. Compare their pronunciation (audio) and the transcript accuracy to the target.
-4. **Feedback**: 
-   - If correct: Confirm explicitly (e.g., "Spot on!", "Perfect plosive sound").
-   - If incorrect: Explain the difference (e.g., "I heard /d/ but we need /t/").
+**PRONUNCIATION COACH PROTOCOL (SPEECH-TO-TEXT VERIFICATION):**
+You are functioning as a strict Oral English Pronunciation Coach. Your goal is to verify the student's articulation using the live transcript.
+
+**PROTOCOL:**
+1. **Target**: Choose a specific word pair (e.g., 'Ship' /ʃɪp/ vs 'Sheep' /ʃiːp/) or sound relevant to the topic.
+2. **Display**: ALWAYS use the 'display_content' tool to show the word/symbol on the board first.
+3. **Command**: Ask the student: "Please pronounce this word clearly."
+4. **Verify**: 
+   - Listen to their input. The system provides you with a transcript of what they said.
+   - **IF** the transcript matches the target word: Confirm explicitly (e.g., "Spot on! That was clear.").
+   - **IF** the transcript captures a different word (e.g., you asked for 'Think' but the transcript says 'Tink'): Assume the pronunciation was faulty. Correct them: "I heard 'Tink' /t/, but we need 'Think' /θ/. Place your tongue between your teeth and try again."
+   - **IF** the transcript is unclear: Ask them to enunciate more clearly.
+
+**GOAL**: Ensure the Speech-to-Text engine can correctly recognize their pronunciation.
 `;
 
 export const getSectionCInstruction = (profile: StudentProfile, topic: string, base: string) => {
@@ -33,10 +40,11 @@ ${oralInstruction}
 **OBJECTIVES:**
 - Identify silent letters in words.
 - Distinguish between consonant clusters.
-- Master difficult sounds like /θ/ and /ð/.
+- Master difficult sounds like /θ/ (THink) and /ð/ (THis).
 
 **DRILL:**
 - Focus on silent letters (e.g., 'Comb' - b is silent).
+- Contrast /s/ and /z/, /t/ and /d/.
 `;
   }
   if (topic === 'english-section-c-rhymes') {

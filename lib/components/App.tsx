@@ -18,6 +18,23 @@ import ArabicSyllabusView from './ArabicSyllabusView';
 import ArtSyllabusView from './ArtSyllabusView';
 import BiologySyllabusView from './BiologySyllabusView';
 import ChemistrySyllabusView from './ChemistrySyllabusView';
+import AccountsSyllabusView from './AccountsSyllabusView';
+import CRSSyllabusView from './CRSSyllabusView';
+import CommerceSyllabusView from './CommerceSyllabusView';
+import ComputerSyllabusView from './ComputerSyllabusView';
+import EconomicsSyllabusView from './EconomicsSyllabusView';
+import FrenchSyllabusView from './FrenchSyllabusView';
+import GeographySyllabusView from './GeographySyllabusView';
+import HausaSyllabusView from './HausaSyllabusView';
+import HistorySyllabusView from './HistorySyllabusView';
+import IgboSyllabusView from './IgboSyllabusView';
+import IRSSyllabusView from './IRSSyllabusView';
+import LiteratureSyllabusView from './LiteratureSyllabusView';
+import MathematicsSyllabusView from './MathematicsSyllabusView';
+import MusicSyllabusView from './MusicSyllabusView';
+import PHESyllabusView from './PHESyllabusView';
+import PhysicsSyllabusView from './PhysicsSyllabusView';
+import YorubaSyllabusView from './YorubaSyllabusView';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsOfService from './TermsOfService';
 
@@ -54,6 +71,11 @@ const App: React.FC = () => {
   // Combine error messages
   const [globalError, setGlobalError] = useState<string | null>(sessionError);
 
+  // Scroll to top on view change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
   // Update global error if session error changes
   useEffect(() => {
     if (sessionError) setGlobalError(sessionError);
@@ -83,6 +105,40 @@ const App: React.FC = () => {
          setView('BIOLOGY_SYLLABUS');
       } else if (normSubject === 'Chemistry') {
          setView('CHEMISTRY_SYLLABUS');
+      } else if (normSubject === 'Principles of Accounts') {
+         setView('ACCOUNTS_SYLLABUS');
+      } else if (normSubject === 'Christian Religious Studies') {
+         setView('CRS_SYLLABUS');
+      } else if (normSubject === 'Commerce') {
+         setView('COMMERCE_SYLLABUS');
+      } else if (normSubject === 'Computer Studies') {
+         setView('COMPUTER_SYLLABUS');
+      } else if (normSubject === 'Economics') {
+         setView('ECONOMICS_SYLLABUS');
+      } else if (normSubject === 'French') {
+         setView('FRENCH_SYLLABUS');
+      } else if (normSubject === 'Geography') {
+         setView('GEOGRAPHY_SYLLABUS');
+      } else if (normSubject === 'Hausa') {
+         setView('HAUSA_SYLLABUS');
+      } else if (normSubject === 'History') {
+         setView('HISTORY_SYLLABUS');
+      } else if (normSubject === 'Igbo') {
+         setView('IGBO_SYLLABUS');
+      } else if (normSubject === 'Islamic Studies') {
+         setView('IRS_SYLLABUS');
+      } else if (normSubject === 'Literature-In-English') {
+         setView('LITERATURE_SYLLABUS');
+      } else if (normSubject === 'Mathematics') {
+         setView('MATHEMATICS_SYLLABUS');
+      } else if (normSubject === 'Music') {
+         setView('MUSIC_SYLLABUS');
+      } else if (normSubject === 'Physical and Health Education') {
+         setView('PHE_SYLLABUS');
+      } else if (normSubject === 'Physics') {
+         setView('PHYSICS_SYLLABUS');
+      } else if (normSubject === 'Yoruba') {
+         setView('YORUBA_SYLLABUS');
       } else {
          setView('DASHBOARD');
       }
@@ -158,6 +214,74 @@ const App: React.FC = () => {
         }
         if (normSubject === 'Chemistry') {
             setView('CHEMISTRY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Principles of Accounts') {
+            setView('ACCOUNTS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Christian Religious Studies') {
+            setView('CRS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Commerce') {
+            setView('COMMERCE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Computer Studies') {
+            setView('COMPUTER_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Economics') {
+            setView('ECONOMICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'French') {
+            setView('FRENCH_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Geography') {
+            setView('GEOGRAPHY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Hausa') {
+            setView('HAUSA_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'History') {
+            setView('HISTORY_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Igbo') {
+            setView('IGBO_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Islamic Studies') {
+            setView('IRS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Literature-In-English') {
+            setView('LITERATURE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Mathematics') {
+            setView('MATHEMATICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Music') {
+            setView('MUSIC_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Physical and Health Education') {
+            setView('PHE_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Physics') {
+            setView('PHYSICS_SYLLABUS');
+            return;
+        }
+        if (normSubject === 'Yoruba') {
+            setView('YORUBA_SYLLABUS');
             return;
         }
     }
@@ -300,6 +424,159 @@ const App: React.FC = () => {
           <ChemistrySyllabusView 
             onBack={() => setView('DASHBOARD')}
             onStartSection={(sectionId) => handleStartSession('Chemistry', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'ACCOUNTS_SYLLABUS') {
+      return (
+          <AccountsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Principles of Accounts', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'CRS_SYLLABUS') {
+      return (
+          <CRSSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Christian Religious Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'COMMERCE_SYLLABUS') {
+      return (
+          <CommerceSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Commerce', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'COMPUTER_SYLLABUS') {
+      return (
+          <ComputerSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Computer Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'ECONOMICS_SYLLABUS') {
+      return (
+          <EconomicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Economics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'FRENCH_SYLLABUS') {
+      return (
+          <FrenchSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('French', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'GEOGRAPHY_SYLLABUS') {
+      return (
+          <GeographySyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Geography', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'HAUSA_SYLLABUS') {
+      return (
+          <HausaSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Hausa', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'HISTORY_SYLLABUS') {
+      return (
+          <HistorySyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('History', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'IGBO_SYLLABUS') {
+      return (
+          <IgboSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Igbo', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'IRS_SYLLABUS') {
+      return (
+          <IRSSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Islamic Studies', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'LITERATURE_SYLLABUS') {
+      return (
+          <LiteratureSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Literature-In-English', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'MATHEMATICS_SYLLABUS') {
+      return (
+          <MathematicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Mathematics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'MUSIC_SYLLABUS') {
+      return (
+          <MusicSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Music', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'PHE_SYLLABUS') {
+      return (
+          <PHESyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Physical and Health Education', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'PHYSICS_SYLLABUS') {
+      return (
+          <PhysicsSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Physics', sectionId)}
+          />
+      );
+  }
+
+  if (view === 'YORUBA_SYLLABUS') {
+      return (
+          <YorubaSyllabusView 
+            onBack={() => setView('DASHBOARD')}
+            onStartSection={(sectionId) => handleStartSession('Yoruba', sectionId)}
           />
       );
   }

@@ -39,6 +39,22 @@ export { ART_SECTIONS } from './coaches/subjects/art';
 export { BIOLOGY_SECTIONS } from './coaches/subjects/biology';
 export { CHEMISTRY_SECTIONS } from './coaches/subjects/chemistry';
 export { ACCOUNTS_SECTIONS } from './coaches/subjects/accounts';
+export { CRS_SECTIONS } from './coaches/subjects/crs';
+export { COMMERCE_SECTIONS } from './coaches/subjects/commerce';
+export { COMPUTER_SECTIONS } from './coaches/subjects/computer';
+export { ECONOMICS_SECTIONS } from './coaches/subjects/economics';
+export { FRENCH_SECTIONS } from './coaches/subjects/french';
+export { GEOGRAPHY_SECTIONS } from './coaches/subjects/geography';
+export { HAUSA_SECTIONS } from './coaches/subjects/hausa';
+export { HISTORY_SECTIONS } from './coaches/subjects/history';
+export { IGBO_SECTIONS } from './coaches/subjects/igbo';
+export { IRS_SECTIONS } from './coaches/subjects/irs';
+export { LITERATURE_SECTIONS } from './coaches/subjects/literature';
+export { MATHEMATICS_SECTIONS } from './coaches/subjects/mathematics';
+export { MUSIC_SECTIONS } from './coaches/subjects/music';
+export { PHE_SECTIONS } from './coaches/subjects/phe';
+export { PHYSICS_SECTIONS } from './coaches/subjects/physics';
+export { YORUBA_SECTIONS } from './coaches/subjects/yoruba';
 export { BASE_INSTRUCTION } from './coaches/base';
 
 export interface CoachConfig {
