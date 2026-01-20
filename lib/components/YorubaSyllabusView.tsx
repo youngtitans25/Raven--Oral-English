@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, PenTool, Users, Play, Sparkles, ChevronRight, Layers, Scroll, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { YORUBA_SECTIONS } from '../coaches';
+import { YORUBA_SECTIONS, YORUBA_INSTRUCTION } from '../coaches';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import { SyllabusPreviewModal } from './ui/SyllabusPreviewModal';
 
 interface YorubaSyllabusViewProps {
   onBack: () => void;
@@ -12,6 +14,7 @@ interface YorubaSyllabusViewProps {
 
 const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [previewTopicId, setPreviewTopicId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -20,6 +23,8 @@ const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStart
   const activeSection = selectedSectionId 
     ? YORUBA_SECTIONS.find(s => s.id === selectedSectionId) 
     : null;
+  
+  const activePreviewModule = activeSection?.subModules?.find(m => m.id === previewTopicId);
 
   const handleBack = () => {
     if (selectedSectionId) {
@@ -27,6 +32,17 @@ const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStart
     } else {
         onBack();
     }
+  };
+
+  const handleTopicClick = (topicId: string) => {
+      setPreviewTopicId(topicId);
+  };
+
+  const handleStartSession = () => {
+      if (previewTopicId) {
+          onStartSection(previewTopicId);
+          setPreviewTopicId(null);
+      }
   };
 
   const renderMainView = () => (
@@ -120,7 +136,7 @@ const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStart
                     <Card 
                         key={module.id}
                         className={`group hover:border-current transition-all cursor-pointer overflow-hidden border-slate-200 ${themeColor}`}
-                        onClick={() => onStartSection(module.id)}
+                        onClick={() => handleTopicClick(module.id)}
                     >
                         <div className="flex flex-row sm:flex-col h-full text-slate-900">
                              {/* Image side */}
@@ -142,7 +158,7 @@ const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStart
                                     {module.description}
                                 </p>
                                 <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-current uppercase tracking-wider transition-colors">
-                                    <Play className="w-3 h-3 mr-1 fill-current" /> Start Lesson
+                                    <BookOpen className="w-3 h-3 mr-1 fill-current" /> View Syllabus
                                 </div>
                             </div>
                         </div>
@@ -155,6 +171,19 @@ const YorubaSyllabusView: React.FC<YorubaSyllabusViewProps> = ({ onBack, onStart
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Syllabus Modal */}
+      {previewTopicId && activePreviewModule && (
+          <SyllabusPreviewModal 
+            topicId={previewTopicId}
+            topicTitle={activePreviewModule.title}
+            topicImage={(activePreviewModule as any).image} // Fixed
+            subjectName="Yoruba"
+            onClose={() => setPreviewTopicId(null)}
+            onStart={handleStartSession}
+            instructionGenerator={YORUBA_INSTRUCTION}
+          />
+      )}
+
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
         <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-orange-600 text-sm">

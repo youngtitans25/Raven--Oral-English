@@ -1,16 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
+
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Visualizer from './Visualizer';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { SessionStatus } from '../../types';
-import { StopCircle, Mic, Volume2, ArrowLeft, User, Bot, Sparkles, ChevronDown, ChevronUp, RefreshCw, AlertCircle, Loader2, Pause, Play, Keyboard, Send, X } from 'lucide-react';
+import { SessionStatus, SessionMode } from '../../types';
+import { StopCircle, Mic, Volume2, ArrowLeft, User, Bot, Sparkles, ChevronDown, ChevronUp, RefreshCw, AlertCircle, Loader2, Pause, Play, Keyboard, Send, X, Coins, ArrowUp, ArrowDown, MessageSquare } from 'lucide-react';
 import { ChatMessage, VisualContent } from '../../hooks/useLiveSession';
 import { COACHES } from '../coaches';
 import PeriodicTableSimulation from './simulations/PeriodicTableSimulation';
+import SpreadsheetSimulation from './simulations/SpreadsheetSimulation';
 import { Input } from './ui/input';
+import { TokenUsage } from '../../api/types';
 
 interface LiveSessionViewProps {
   status: SessionStatus;
+  sessionMode?: SessionMode;
   subject: string;
   analyser: AnalyserNode | null;
   visualContent: VisualContent | null;
@@ -20,8 +24,13 @@ interface LiveSessionViewProps {
   onReconnect?: () => void;
   onCloseSimulation?: () => void;
   onTogglePause?: () => void; 
+  onToggleMode?: () => void;
   onSendText?: (text: string) => void;
   isProcessingText?: boolean;
+  tokenUsage?: TokenUsage;
+  currentTranscript?: string;
+  // NEW: Add capability to send system messages
+  sendSystemContext?: (text: string) => void;
 }
 
 // --- HELPER: Rich Text Renderer for Display Board ---
@@ -94,6 +103,7 @@ const RichTextRenderer: React.FC<{ content: string }> = ({ content }) => {
 
 const LiveSessionView: React.FC<LiveSessionViewProps> = ({
   status,
+  sessionMode = 'voice',
   subject,
   analyser,
   visualContent,
@@ -103,16 +113,21 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
   onReconnect,
   onCloseSimulation,
   onTogglePause,
+  onToggleMode,
   onSendText,
-  isProcessingText = false
+  isProcessingText = false,
+  tokenUsage = { totalTokens: 0, inputTokens: 0, outputTokens: 0 },
+  currentTranscript = '',
+  sendSystemContext
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(true);
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [showInput, setShowInput] = useState(false);
   const [inputText, setInputText] = useState("");
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Get subject metadata. If not found in defined COACHES, create a dynamic one.
+  // Get subject metadata
   const coachInfo = COACHES[subject] || { 
       name: `${subject} Coach`, 
       id: subject.toLowerCase().replace(/\s+/g, '-'),
@@ -137,19 +152,20 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
-    if (scrollRef.current && isTranscriptOpen) {
+    if (scrollRef.current && (isTranscriptOpen || sessionMode === 'text')) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTranscriptOpen]);
+  }, [messages, isTranscriptOpen, sessionMode]);
 
-  // Auto-collapse transcript when simulation starts to give space
+  // Auto-collapse transcript when simulation starts
   useEffect(() => {
     if (activeSimulation) {
         setIsTranscriptOpen(false);
     } else {
-        setIsTranscriptOpen(true);
+        // Only auto-open if in text mode or user specifically opened it
+        if (sessionMode === 'text') setIsTranscriptOpen(true);
     }
-  }, [activeSimulation]);
+  }, [activeSimulation, sessionMode]);
 
   const handleSend = (e?: React.FormEvent) => {
       e?.preventDefault();
@@ -158,6 +174,17 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
           setInputText("");
       }
   };
+
+  // Handle Simulation Grid Updates
+  const handleSimulationUpdate = useCallback((gridState: string) => {
+      if (!sendSystemContext) return;
+      
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      
+      updateTimeoutRef.current = setTimeout(() => {
+          sendSystemContext(`[SYSTEM]: ${gridState}`);
+      }, 1000);
+  }, [sendSystemContext]);
 
   // Determine what to render in the main content area
   const renderMainContent = () => {
@@ -168,6 +195,17 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
                   <PeriodicTableSimulation onClose={onCloseSimulation || (() => {})} />
               </div>
           );
+      }
+
+      if (activeSimulation === 'spreadsheet-training') {
+        return (
+            <div className="w-full h-full min-h-0 bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-500 relative">
+                <SpreadsheetSimulation 
+                    onClose={onCloseSimulation || (() => {})} 
+                    onUpdate={handleSimulationUpdate}
+                />
+            </div>
+        );
       }
 
       // 2. Check for Visual Content
@@ -206,18 +244,23 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
         );
       }
 
-      // 3. Default "Listening" State
-      return (
-        <div className="text-center opacity-50 space-y-4 md:space-y-6">
-            <div className="w-20 h-20 md:w-28 md:h-28 bg-white/5 rounded-full mx-auto flex items-center justify-center border border-white/10 animate-pulse">
-                <Mic className="w-8 h-8 md:w-12 md:h-12" />
+      // 3. Default "Listening" State (Only show in Voice Mode)
+      if (sessionMode === 'voice') {
+        return (
+            <div className="text-center opacity-50 space-y-4 md:space-y-6">
+                <div className="w-20 h-20 md:w-28 md:h-28 bg-white/5 rounded-full mx-auto flex items-center justify-center border border-white/10 animate-pulse">
+                    <Mic className="w-8 h-8 md:w-12 md:h-12" />
+                </div>
+                <div>
+                    <p className="text-xl md:text-2xl font-light tracking-wide mb-2">"I'm listening..."</p>
+                    <p className="text-xs md:text-sm text-slate-400">Speak clearly to your {coachInfo.name}</p>
+                </div>
             </div>
-            <div>
-                <p className="text-xl md:text-2xl font-light tracking-wide mb-2">"I'm listening..."</p>
-                <p className="text-xs md:text-sm text-slate-400">Speak clearly to your {coachInfo.name}</p>
-            </div>
-        </div>
-      );
+        );
+      } else {
+        // Text mode placeholder: Keeps the layout balanced but emphasizes the chat history below
+        return null; 
+      }
   };
 
   return (
@@ -250,7 +293,7 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
         </div>
       )}
 
-      {/* Timeout / Disconnect Overlay (Only shown if truly disconnected/idle, not reconnecting) */}
+      {/* Timeout / Disconnect Overlay */}
       {(status === SessionStatus.IDLE || status === SessionStatus.ERROR) && (
           <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-md w-full text-center shadow-2xl animate-in zoom-in-95">
@@ -258,7 +301,7 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
                       <AlertCircle className="w-8 h-8" />
                   </div>
                   <h2 className="text-2xl font-bold mb-2">Session Paused</h2>
-                  <p className="text-slate-400 mb-8">The connection was closed (likely due to a time limit). Would you like to resume your session?</p>
+                  <p className="text-slate-400 mb-8">The connection was closed. Would you like to resume your session?</p>
                   
                   <div className="flex flex-col gap-3">
                       {onReconnect && (
@@ -274,8 +317,8 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
           </div>
       )}
 
-      {/* Background Visualizer - Only show if no simulation to save resources/distraction */}
-      {!activeSimulation && (status === SessionStatus.CONNECTED || status === SessionStatus.RECONNECTING) && (
+      {/* Background Visualizer - Only show if no simulation and IN VOICE MODE */}
+      {!activeSimulation && sessionMode === 'voice' && (status === SessionStatus.CONNECTED || status === SessionStatus.RECONNECTING) && (
         <div className="absolute inset-0 opacity-40 pointer-events-none">
             <Visualizer analyser={analyser} isActive={status === SessionStatus.CONNECTED} />
         </div>
@@ -292,57 +335,89 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
                  <Sparkles className="w-3 h-3 text-emerald-400" />
                  <span className="text-xs font-bold text-emerald-200 uppercase tracking-wider">{coachInfo.name}</span>
             </div>
-            <span className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">Live Session</span>
-            <span className="text-sm font-mono font-bold text-emerald-400/90 tracking-widest mt-0.5 tabular-nums">
-                {formatTime(durationSeconds)}
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+                 <span className="text-[10px] text-slate-400 uppercase tracking-widest">
+                    {sessionMode === 'text' ? 'Text Session' : 'Live Voice'}
+                 </span>
+                 {onToggleMode && (
+                     <button onClick={onToggleMode} className={`p-1.5 rounded-full hover:bg-white/10 transition-colors border ${sessionMode === 'text' ? 'border-blue-500/50 bg-blue-500/20 text-blue-300' : 'border-slate-600 text-slate-400'}`} title={sessionMode === 'text' ? "Switch to Voice" : "Switch to Text-Only"}>
+                         {sessionMode === 'text' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
+                     </button>
+                 )}
+            </div>
+            <div className="flex flex-col items-end mt-1">
+                <span className="text-sm font-mono font-bold text-emerald-400/90 tracking-widest tabular-nums">
+                    {formatTime(durationSeconds)}
+                </span>
+            </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      {/* Adjusted layout to maximize space when simulation is active */}
       <div className={`
           flex-1 relative z-10 flex flex-col items-center justify-between mx-auto w-full overflow-hidden transition-all duration-500
           ${activeSimulation ? 'p-2 md:p-4 max-w-[98%] gap-2' : 'p-4 md:p-8 max-w-5xl gap-4 md:gap-8'}
       `}>
         
-        {/* Dynamic Board / Simulation */}
-        <div className="w-full flex justify-center flex-1 items-center min-h-0">
+        {/* Dynamic Board / Simulation / Listening State */}
+        <div className={`w-full flex justify-center items-center relative ${sessionMode === 'text' && !activeSimulation && !visualContent ? 'min-h-0 h-0 hidden' : 'flex-1 min-h-0'}`}>
             {renderMainContent()}
+
+            {/* REAL-TIME TRANSCRIPT OVERLAY (VOICE MODE ONLY) */}
+            {sessionMode === 'voice' && currentTranscript && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4">
+                    <div className="bg-black/60 backdrop-blur-xl text-white px-6 py-4 rounded-2xl shadow-xl border border-white/10 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex items-center gap-3 mb-1">
+                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                             <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Hearing</span>
+                        </div>
+                        <p className="text-lg md:text-xl font-medium leading-tight text-center">
+                            "{currentTranscript}"
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Live Transcripts / Conversation History */}
         <div className={`
             w-full max-w-2xl shrink-0 overflow-hidden relative rounded-xl bg-slate-900/60 backdrop-blur-sm border border-white/10
-            transition-all duration-300 ease-in-out
-            ${isTranscriptOpen 
-                ? (activeSimulation ? 'h-[120px] md:h-[160px]' : 'h-[160px] md:h-[220px]') 
-                : 'h-[36px] md:h-[40px]'}
+            transition-all duration-300 ease-in-out flex flex-col
+            ${sessionMode === 'text' 
+                ? 'flex-1 h-full mb-20' // Text Mode: Fill remaining space, leave room for input
+                : (isTranscriptOpen 
+                    ? (activeSimulation ? 'h-[120px] md:h-[160px]' : 'h-[160px] md:h-[220px]') 
+                    : 'h-[36px] md:h-[40px]')
+            }
         `}>
-            {/* Transcript Header / Toggle */}
+            {/* Transcript Header / Toggle (Hide toggle in text mode) */}
             <div 
-                className="absolute top-0 left-0 right-0 bg-slate-900/90 px-4 h-[36px] md:h-[40px] flex justify-between items-center cursor-pointer hover:bg-slate-800 transition-colors border-b border-white/5 z-20"
-                onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
+                className="absolute top-0 left-0 right-0 bg-slate-900/90 px-4 h-[36px] md:h-[40px] flex justify-between items-center cursor-pointer hover:bg-slate-800 transition-colors border-b border-white/5 z-20 shrink-0"
+                onClick={() => sessionMode === 'voice' && setIsTranscriptOpen(!isTranscriptOpen)}
             >
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] md:text-xs font-medium text-slate-400">LIVE TRANSCRIPT</span>
-                    {status === SessionStatus.CONNECTED && (
+                    <span className="text-[10px] md:text-xs font-medium text-slate-400">
+                        {sessionMode === 'text' ? 'CONVERSATION' : 'LIVE TRANSCRIPT'}
+                    </span>
+                    {status === SessionStatus.CONNECTED && sessionMode === 'voice' && (
                         <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"/>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
-                     <span className="text-[10px] text-emerald-500/80 hidden sm:inline">AI Active</span>
-                     {isTranscriptOpen ? (
-                         <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-slate-400" />
-                     ) : (
-                         <ChevronUp className="w-3 h-3 md:w-4 md:h-4 text-slate-400" />
-                     )}
-                </div>
+                {sessionMode === 'voice' && (
+                    <div className="flex items-center gap-2">
+                         <span className="text-[10px] text-emerald-500/80 hidden sm:inline">AI Active</span>
+                         {isTranscriptOpen ? (
+                             <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-slate-400" />
+                         ) : (
+                             <ChevronUp className="w-3 h-3 md:w-4 md:h-4 text-slate-400" />
+                         )}
+                    </div>
+                )}
             </div>
             
             <div 
                 ref={scrollRef}
-                className="h-full overflow-y-auto p-4 pt-12 space-y-3 md:space-y-4 scroll-smooth"
+                className="flex-1 overflow-y-auto p-4 pt-12 space-y-3 md:space-y-4 scroll-smooth"
             >
                 {messages.length === 0 && (
                     <div className="text-center text-slate-500 text-xs mt-4">Conversation will appear here...</div>
@@ -378,15 +453,17 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
             </div>
         </div>
 
-        {/* Input Floating Bar (Visible when toggled) */}
-        {showInput && (
-            <div className="absolute bottom-24 md:bottom-28 left-4 right-4 z-50 animate-in slide-in-from-bottom-2 fade-in">
+        {/* Input Floating Bar (Visible when toggled or in Text Mode) */}
+        {(showInput || sessionMode === 'text') && (
+            <div className={`
+                ${sessionMode === 'text' ? 'absolute bottom-4 left-4 right-4 z-50' : 'absolute bottom-24 md:bottom-28 left-4 right-4 z-50 animate-in slide-in-from-bottom-2 fade-in'}
+            `}>
                 <div className="max-w-xl mx-auto">
                     <form onSubmit={handleSend} className="bg-slate-800/90 backdrop-blur-md p-3 rounded-2xl border border-slate-700 shadow-2xl flex gap-2">
                         <Input
                             value={inputText}
                             onChange={(e) => setInputText(e.target.value)}
-                            placeholder={isProcessingText ? "Raven is analyzing your input..." : "Type your response, list, or question..."}
+                            placeholder={isProcessingText ? "Raven is thinking..." : "Type your response..."}
                             className={`
                                 bg-slate-900/50 border-slate-700 text-white focus:ring-emerald-500 focus:border-emerald-500
                                 ${isProcessingText ? 'opacity-50 cursor-not-allowed' : ''}
@@ -402,58 +479,62 @@ const LiveSessionView: React.FC<LiveSessionViewProps> = ({
                         >
                             {isProcessingText ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="text-slate-400 hover:text-white shrink-0"
-                            onClick={() => setShowInput(false)}
-                            disabled={isProcessingText}
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
+                        {sessionMode === 'voice' && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="text-slate-400 hover:text-white shrink-0"
+                                onClick={() => setShowInput(false)}
+                                disabled={isProcessingText}
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        )}
                     </form>
                 </div>
             </div>
         )}
 
-        {/* Footer Controls */}
-        <div className="flex justify-center gap-4 pb-2 md:pb-4 shrink-0">
-             {onSendText && (
-                <Button
-                    variant="outline"
-                    size="lg"
-                    className={`rounded-full w-14 h-14 md:w-16 md:h-16 p-0 border-4 border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white hover:scale-105 transition-all duration-300 active:scale-95 ${showInput ? 'bg-slate-800 text-white border-slate-600' : ''}`}
-                    onClick={() => setShowInput(!showInput)}
-                    title="Type Response"
-                    disabled={isProcessingText}
-                >
-                    <Keyboard className="w-6 h-6 md:w-8 md:h-8 fill-current" />
-                </Button>
-             )}
+        {/* Footer Controls (Voice Mode Only) */}
+        {sessionMode === 'voice' && (
+            <div className="flex justify-center gap-4 pb-2 md:pb-4 shrink-0">
+                {onSendText && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className={`rounded-full w-14 h-14 md:w-16 md:h-16 p-0 border-4 border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white hover:scale-105 transition-all duration-300 active:scale-95 ${showInput ? 'bg-slate-800 text-white border-slate-600' : ''}`}
+                        onClick={() => setShowInput(!showInput)}
+                        title="Type Response"
+                        disabled={isProcessingText}
+                    >
+                        <Keyboard className="w-6 h-6 md:w-8 md:h-8 fill-current" />
+                    </Button>
+                )}
 
-             {onTogglePause && (
-                <Button
-                    variant="outline"
-                    size="lg"
-                    className="rounded-full w-14 h-14 md:w-16 md:h-16 p-0 border-4 border-slate-700 hover:bg-slate-800 text-amber-500 hover:text-amber-400 hover:scale-105 transition-all duration-300 active:scale-95"
-                    onClick={onTogglePause}
-                    title={status === SessionStatus.PAUSED ? "Resume" : "Pause"}
-                >
-                    {status === SessionStatus.PAUSED ? <Play className="w-6 h-6 md:w-8 md:h-8 fill-current" /> : <Pause className="w-6 h-6 md:w-8 md:h-8 fill-current" />}
-                </Button>
-            )}
+                {onTogglePause && (
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="rounded-full w-14 h-14 md:w-16 md:h-16 p-0 border-4 border-slate-700 hover:bg-slate-800 text-amber-500 hover:text-amber-400 hover:scale-105 transition-all duration-300 active:scale-95"
+                        onClick={onTogglePause}
+                        title={status === SessionStatus.PAUSED ? "Resume" : "Pause"}
+                    >
+                        {status === SessionStatus.PAUSED ? <Play className="w-6 h-6 md:w-8 md:h-8 fill-current" /> : <Pause className="w-6 h-6 md:w-8 md:h-8 fill-current" />}
+                    </Button>
+                )}
 
-            <Button 
-                variant="destructive" 
-                size="lg" 
-                className="rounded-full w-14 h-14 md:w-16 md:h-16 p-0 shadow-lg shadow-red-900/20 border-4 border-slate-900 hover:bg-red-600 hover:scale-105 transition-all duration-300 active:scale-95"
-                onClick={onDisconnect}
-                title="End Session"
-            >
-                <StopCircle className="w-6 h-6 md:w-8 md:h-8 fill-current" />
-            </Button>
-        </div>
+                <Button 
+                    variant="destructive" 
+                    size="lg" 
+                    className="rounded-full w-14 h-14 md:w-16 md:h-16 p-0 shadow-lg shadow-red-900/20 border-4 border-slate-900 hover:bg-red-600 hover:scale-105 transition-all duration-300 active:scale-95"
+                    onClick={onDisconnect}
+                    title="End Session"
+                >
+                    <StopCircle className="w-6 h-6 md:w-8 md:h-8 fill-current" />
+                </Button>
+            </div>
+        )}
       </div>
     </div>
   );

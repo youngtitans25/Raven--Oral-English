@@ -1,8 +1,10 @@
+
+// ... imports
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { SessionStatus, Provider, StudentProfile } from '../types';
+import { SessionStatus, Provider, StudentProfile, ExamMode, SessionMode } from '../types';
 import { decodeAudioData } from '../utils/audio';
 import { GeminiClient } from '../api/gemini';
-import { LiveClient } from '../api/types';
+import { LiveClient, TokenUsage } from '../api/types';
 import { generateSystemInstruction } from '../utils/context';
 import { MOCK_ANALYTICS } from '../lib/mockData';
 import { LIVE_MODEL } from '../lib/constants';
@@ -22,12 +24,15 @@ export interface VisualContent {
 
 export const useLiveSession = () => {
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.IDLE);
+  const [sessionMode, setSessionMode] = useState<SessionMode>('voice');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [visualContent, setVisualContent] = useState<VisualContent | null>(null);
   const [activeSimulation, setActiveSimulation] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isProcessingText, setIsProcessingText] = useState(false);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage>({ totalTokens: 0, inputTokens: 0, outputTokens: 0 });
+  const [currentTranscript, setCurrentTranscript] = useState<string>('');
 
   // Refs for State Persistence
   const messagesRef = useRef<ChatMessage[]>([]);
@@ -51,17 +56,18 @@ export const useLiveSession = () => {
   const sessionIdRef = useRef<string | null>(null);
   const isUserDisconnectingRef = useRef<boolean>(false);
   const reconnectAttemptsRef = useRef<number>(0);
-  const isFatalErrorRef = useRef<boolean>(false); // NEW: Track fatal errors to stop retry loop
+  const isFatalErrorRef = useRef<boolean>(false); 
   const MAX_RECONNECT_ATTEMPTS = 3;
   
   const sessionParamsRef = useRef<{
       profile: StudentProfile;
       subject: string;
       topic?: string;
+      examMode: ExamMode;
+      initialMode: SessionMode;
   } | null>(null);
 
   // --- 1. ROBUST AUDIO CLEANUP ---
-  // This isolates audio teardown to prevent "Different Audio Context" errors
   const cleanupAudio = useCallback(() => {
     // Stop all microphone tracks explicitly
     if (streamRef.current) {
@@ -124,6 +130,8 @@ export const useLiveSession = () => {
     reconnectAttemptsRef.current = 0;
     isFatalErrorRef.current = false;
     setIsProcessingText(false);
+    setCurrentTranscript('');
+    setTokenUsage({ totalTokens: 0, inputTokens: 0, outputTokens: 0 });
     
     setStatus(SessionStatus.ENDED);
   }, [cleanupResources]);
@@ -138,11 +146,37 @@ export const useLiveSession = () => {
     } else if (status === SessionStatus.PAUSED) {
         // Resume
         if (clientRef.current) clientRef.current.resume();
-        if (inputAudioContextRef.current?.state === 'suspended') await inputAudioContextRef.current.resume();
-        if (outputAudioContextRef.current?.state === 'suspended') await outputAudioContextRef.current.resume();
+        if (sessionMode === 'voice') {
+            if (inputAudioContextRef.current?.state === 'suspended') await inputAudioContextRef.current.resume();
+            if (outputAudioContextRef.current?.state === 'suspended') await outputAudioContextRef.current.resume();
+        }
         setStatus(SessionStatus.CONNECTED);
     }
-  }, [status]);
+  }, [status, sessionMode]);
+
+  const toggleSessionMode = useCallback(async () => {
+    if (status !== SessionStatus.CONNECTED && status !== SessionStatus.PAUSED) return;
+
+    if (sessionMode === 'voice') {
+        // Switch to TEXT mode: Mute Audio
+        try {
+            if (inputAudioContextRef.current?.state === 'running') await inputAudioContextRef.current.suspend();
+            if (outputAudioContextRef.current?.state === 'running') await outputAudioContextRef.current.suspend();
+            setSessionMode('text');
+        } catch (e) {
+            console.error("Failed to switch to text mode", e);
+        }
+    } else {
+        // Switch to VOICE mode: Resume Audio
+        try {
+             if (inputAudioContextRef.current?.state === 'suspended') await inputAudioContextRef.current.resume();
+             if (outputAudioContextRef.current?.state === 'suspended') await outputAudioContextRef.current.resume();
+             setSessionMode('voice');
+        } catch (e) {
+             console.error("Failed to switch to voice mode", e);
+        }
+    }
+  }, [sessionMode, status]);
 
   const sendText = useCallback(async (text: string) => {
     if (clientRef.current && (status === SessionStatus.CONNECTED || status === SessionStatus.RECONNECTING || status === SessionStatus.PAUSED)) {
@@ -174,27 +208,29 @@ export const useLiveSession = () => {
     }
   }, [status]);
 
-  // --- 2. INITIALIZE AUDIO STACK ---
-  // Separated from connection logic to allow retries on "InvalidAccessError"
-  const initializeAudio = async () => {
-      cleanupAudio(); // Ensure clean slate
+  const sendSystemContext = useCallback(async (text: string) => {
+    if (clientRef.current && (status === SessionStatus.CONNECTED || status === SessionStatus.RECONNECTING)) {
+        console.log("Sending System Context:", text);
+        await clientRef.current.sendText(text);
+    }
+  }, [status]);
 
-      // Create new contexts
+  // --- 2. INITIALIZE AUDIO STACK ---
+  const initializeAudio = async () => {
+      cleanupAudio(); 
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       inputAudioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
       outputAudioContextRef.current = new AudioContextClass({ sampleRate: 24000 });
 
-      // Setup Analyser
       const analyserNode = inputAudioContextRef.current.createAnalyser();
       analyserNode.fftSize = 256;
       setAnalyser(analyserNode);
 
-      // Get Microphone
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      // Connect Nodes (Strictly using the NEW inputAudioContext)
       const source = inputAudioContextRef.current.createMediaStreamSource(stream);
       sourceRef.current = source;
       
@@ -216,19 +252,24 @@ export const useLiveSession = () => {
       profile: StudentProfile, 
       subject: string, 
       topic: string | undefined, 
+      examMode: ExamMode,
+      initialMode: SessionMode,
       isReconnect: boolean
   ) => {
     try {
-        let systemInstruction = generateSystemInstruction(profile, MOCK_ANALYTICS, subject, topic);
+        let systemInstruction = generateSystemInstruction(profile, MOCK_ANALYTICS, subject, topic, examMode);
 
         if (!isReconnect) {
             setStatus(SessionStatus.CONNECTING);
+            setSessionMode(initialMode); // Set mode immediately
             setErrorMessage(null);
             setMessages([]); 
             messagesRef.current = [];
             setVisualContent(null);
             visualContentRef.current = null;
             setActiveSimulation(null);
+            setTokenUsage({ totalTokens: 0, inputTokens: 0, outputTokens: 0 });
+            setCurrentTranscript('');
             reconnectAttemptsRef.current = 0;
             isFatalErrorRef.current = false;
             setIsProcessingText(false);
@@ -239,7 +280,6 @@ export const useLiveSession = () => {
             setStatus(SessionStatus.RECONNECTING);
             console.log(`Reconnecting (Attempt ${reconnectAttemptsRef.current + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
             
-            // Context Restoration
             const recentHistory = messagesRef.current.slice(-15);
             const historyText = recentHistory.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
             const boardState = visualContentRef.current 
@@ -257,7 +297,9 @@ ${historyText}
 `;
         }
 
-        // Initialize Audio (with internal retry for hardware errors)
+        // Initialize Audio 
+        // We initialize it even for text mode to have the socket ready for switching,
+        // but we suspend it immediately if mode is 'text'.
         let audioSetup;
         try {
             audioSetup = await initializeAudio();
@@ -268,10 +310,15 @@ ${historyText}
 
         const { inputContext, outputContext, processor } = audioSetup;
 
+        // Apply initial mode setting to audio contexts
+        if (initialMode === 'text') {
+             await inputContext.suspend();
+             await outputContext.suspend();
+        }
+
         // --- GEMINI CLIENT SETUP ---
         clientRef.current = new GeminiClient();
         
-        // Wire up processor *after* client creation
         processor.onaudioprocess = (e) => {
             if (!clientRef.current) return;
             const inputData = e.inputBuffer.getChannelData(0);
@@ -283,14 +330,20 @@ ${historyText}
                 if (!clientRef.current) return;
                 console.log(`Gemini Connected for ${subject}`);
                 setStatus(SessionStatus.CONNECTED);
-                reconnectAttemptsRef.current = 0; // Reset attempts on success
+                reconnectAttemptsRef.current = 0; 
                 isFatalErrorRef.current = false;
             },
+            onTokenUsage: (usage) => {
+                setTokenUsage(usage);
+            },
+            onTranscriptUpdate: (text) => {
+                setCurrentTranscript(text);
+            },
             onAudioData: async (base64Audio: string) => {
-                // Unlock text input when Raven starts speaking (acknowledgement)
                 setIsProcessingText(false);
-
-                if (!outputContext || outputContext.state === 'closed') return;
+                // Important: Don't play if output context is suspended (text mode)
+                if (!outputContext || outputContext.state === 'closed' || outputContext.state === 'suspended') return;
+                
                 try {
                     nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContext.currentTime);
                     const audioBuffer = await decodeAudioData(base64Audio, outputContext, 24000, 1);
@@ -308,19 +361,10 @@ ${historyText}
                 }
             },
             onMessage: (content: string, role: 'user' | 'assistant') => {
-                // If assistant responds via text, unlock
-                if (role === 'assistant') {
-                    setIsProcessingText(false);
-                }
-
-                // For user messages, we deduplicate against what we already optimistically added in sendText
-                // This prevents the echo from the server (if any) from doubling up the chat
+                if (role === 'assistant') setIsProcessingText(false);
                 if (role === 'user') {
-                    // Check if last message was identical content from user
                     const lastMsg = messagesRef.current[messagesRef.current.length - 1];
-                    if (lastMsg && lastMsg.role === 'user' && lastMsg.content === content) {
-                        return; 
-                    }
+                    if (lastMsg && lastMsg.role === 'user' && lastMsg.content === content) return; 
                 }
 
                 const newMessage: ChatMessage = {
@@ -341,9 +385,7 @@ ${historyText}
                 }
             },
             onToolCall: (toolCalls: any[]) => {
-                // Unblock text input if tool call happens (Raven is acting on it)
                 setIsProcessingText(false);
-
                 toolCalls.forEach(call => {
                     if (call.name === 'display_content') {
                         const newVisual: VisualContent = { data: call.args.text, title: call.args.title };
@@ -369,27 +411,22 @@ ${historyText}
             onClose: () => {
                 console.log("Session connection closed");
                 if (isUserDisconnectingRef.current || isFatalErrorRef.current) {
-                    // STOP RETRY IF:
-                    // 1. User manually disconnected
-                    // 2. Fatal error occurred (e.g. invalid model, 403 Forbidden)
                     if (status !== SessionStatus.ENDED && status !== SessionStatus.ERROR) {
                         setStatus(isFatalErrorRef.current ? SessionStatus.ERROR : SessionStatus.ENDED);
                     }
                 } else {
-                    // AUTO-RECONNECT LOGIC
                     cleanupResources();
-                    
                     if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
                         reconnectAttemptsRef.current += 1;
-                        const delay = Math.min(1000 * reconnectAttemptsRef.current, 5000); // Exponential backoff
-                        
-                        console.log(`Scheduling reconnect in ${delay}ms...`);
+                        const delay = Math.min(1000 * reconnectAttemptsRef.current, 5000);
                         setTimeout(() => {
                             if (sessionParamsRef.current && !isUserDisconnectingRef.current) {
                                 connectInternal(
                                     sessionParamsRef.current.profile, 
                                     sessionParamsRef.current.subject, 
-                                    sessionParamsRef.current.topic, 
+                                    sessionParamsRef.current.topic,
+                                    sessionParamsRef.current.examMode,
+                                    sessionParamsRef.current.initialMode,
                                     true
                                 );
                             }
@@ -401,7 +438,6 @@ ${historyText}
                 }
             },
             onError: (err) => {
-                // If we get an error, check if it's fatal to prevent loops
                 const msg = err.message || "";
                 if (msg.includes('400') || msg.includes('404') || msg.includes('Found') || msg.includes('not found')) {
                     isFatalErrorRef.current = true;
@@ -410,7 +446,6 @@ ${historyText}
                     isFatalErrorRef.current = true;
                     setErrorMessage("Authentication Error: Please check your API key.");
                 }
-
                 console.warn("Socket Error:", err);
                 setIsProcessingText(false);
                 if (clientRef.current) clientRef.current.disconnect(); 
@@ -423,23 +458,25 @@ ${historyText}
 
     } catch (error: any) {
         console.error("Initialization Fatal Error:", error);
-        
-        // If it was a mic error on the very first try, fail fast
         if (!isReconnect) {
             setErrorMessage(error.message || "Failed to start session.");
             setStatus(SessionStatus.ERROR);
             cleanupResources();
             return;
         }
-
-        // If error during reconnect, let the retry logic in onClose handle it (by forcing cleanup)
-        // or trigger a manual retry if we haven't reached the limit
         if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
              cleanupResources();
              reconnectAttemptsRef.current += 1;
              setTimeout(() => {
                 if (sessionParamsRef.current) {
-                    connectInternal(sessionParamsRef.current.profile, sessionParamsRef.current.subject, sessionParamsRef.current.topic, true);
+                    connectInternal(
+                        sessionParamsRef.current.profile, 
+                        sessionParamsRef.current.subject, 
+                        sessionParamsRef.current.topic, 
+                        sessionParamsRef.current.examMode,
+                        sessionParamsRef.current.initialMode,
+                        true
+                    );
                 }
              }, 2000);
         } else {
@@ -449,24 +486,35 @@ ${historyText}
     }
   }, [disconnect, cleanupResources, initializeAudio]);
 
-  const startSession = useCallback((studentProfile: StudentProfile, subject: string, topic?: string) => {
+  const startSession = useCallback((
+      studentProfile: StudentProfile, 
+      subject: string, 
+      topic?: string, 
+      examMode: ExamMode = 'JAMB',
+      initialMode: SessionMode = 'voice'
+    ) => {
       isUserDisconnectingRef.current = false;
-      sessionParamsRef.current = { profile: studentProfile, subject, topic };
-      connectInternal(studentProfile, subject, topic, false);
+      sessionParamsRef.current = { profile: studentProfile, subject, topic, examMode, initialMode };
+      connectInternal(studentProfile, subject, topic, examMode, initialMode, false);
   }, [connectInternal]);
 
   return {
     status,
+    sessionMode,
     errorMessage,
     analyser,
     messages,
     startSession,
     sendChat: sendText,
+    sendSystemContext,
     disconnect,
     togglePause,
+    toggleSessionMode,
     visualContent,
     activeSimulation,
     setActiveSimulation,
-    isProcessingText
+    isProcessingText,
+    tokenUsage,
+    currentTranscript
   };
 };

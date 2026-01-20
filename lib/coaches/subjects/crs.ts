@@ -1,3 +1,4 @@
+
 import { StudentProfile } from '../../types';
 import { BASE_INSTRUCTION } from '../base';
 import { getSectionAInstruction } from './crs/section_a';
@@ -10,16 +11,56 @@ export const CRS_SECTIONS = [
     id: 'crs-section-a',
     title: 'Section A: Themes from Creation to the Division of the Kingdom',
     description: 'Sovereignty of God, Covenant, Leadership, and Divine Providence.',
-    image: 'https://images.unsplash.com/photo-1507434965515-61970f2bd7c6?q=80&w=1000&auto=format&fit=crop',
+    image: '/images/crs/section_a.jpg',
     subModules: [
-      { id: 'crs-sovereignty', title: 'The Sovereignty of God', description: 'Creation process and God\'s sovereignty.' },
-      { id: 'crs-covenant', title: 'The Covenant', description: 'Covenants with Noah, Abraham, and Israel.' },
-      { id: 'crs-leadership', title: 'Leadership Qualities', description: 'Joseph, Moses, Joshua, and Judges.' },
-      { id: 'crs-providence', title: 'Divine Providence', description: 'Guidance, Protection, and Provision.' },
-      { id: 'crs-parental', title: 'Parental Responsibility', description: 'Eli, Samuel, David, and Asa.' },
-      { id: 'crs-obedience', title: 'Obedience and Disobedience', description: 'Rewards and consequences.' },
-      { id: 'crs-david', title: 'A Man After God\'s Own Heart', description: 'Life, submission, and repentance of David.' },
-      { id: 'crs-decision', title: 'Decision-Making', description: 'Solomon\'s wisdom vs unwise decisions.' }
+      { 
+        id: 'crs-sovereignty', 
+        title: 'The Sovereignty of God', 
+        description: 'Creation process and God\'s sovereignty.',
+        image: '/images/crs/sovereignty.jpg'
+      },
+      { 
+        id: 'crs-covenant', 
+        title: 'The Covenant', 
+        description: 'Covenants with Noah, Abraham, and Israel.',
+        image: '/images/crs/covenant.jpg'
+      },
+      { 
+        id: 'crs-leadership', 
+        title: 'Leadership Qualities', 
+        description: 'Joseph, Moses, Joshua, and Judges.',
+        image: '/images/crs/leadership.jpg'
+      },
+      { 
+        id: 'crs-providence', 
+        title: 'Divine Providence', 
+        description: 'Guidance, Protection, and Provision.',
+        image: '/images/crs/providence.jpg'
+      },
+      { 
+        id: 'crs-parental', 
+        title: 'Parental Responsibility', 
+        description: 'Eli, Samuel, David, and Asa.',
+        image: '/images/crs/parental.jpg'
+      },
+      { 
+        id: 'crs-obedience', 
+        title: 'Obedience and Disobedience', 
+        description: 'Rewards and consequences.',
+        image: '/images/crs/obedience.jpg'
+      },
+      { 
+        id: 'crs-david', 
+        title: 'A Man After God\'s Own Heart', 
+        description: 'Life, submission, and repentance of David.',
+        image: '/images/crs/david.jpg'
+      },
+      { 
+        id: 'crs-decision', 
+        title: 'Decision-Making', 
+        description: 'Solomon\'s wisdom vs unwise decisions.',
+        image: '/images/crs/decision.jpg'
+      }
     ]
   },
   {

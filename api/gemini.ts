@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { LiveClient, LiveClientCallbacks, LiveConnectionConfig } from './types';
 import { LIVE_MODEL, TOOLS } from '../lib/constants';
@@ -28,6 +29,18 @@ export class GeminiClient implements LiveClient {
         onmessage: (message: LiveServerMessage) => {
           if (!this.isConnected || this.isPaused) return;
 
+          // Handle Token Usage
+          // The SDK exposes usageMetadata. We check for standard SDK property names.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const usage = (message as any).usageMetadata || (message.serverContent?.modelTurn as any)?.usageMetadata;
+          if (usage) {
+             callbacks.onTokenUsage?.({
+                 inputTokens: usage.promptTokenCount || usage.inputTokenCount || 0,
+                 outputTokens: usage.candidatesTokenCount || usage.outputTokenCount || 0,
+                 totalTokens: usage.totalTokenCount || 0
+             });
+          }
+
           // Handle Audio Output
           const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
           if (base64Audio) {
@@ -39,6 +52,7 @@ export class GeminiClient implements LiveClient {
           const inputTx = message.serverContent?.inputTranscription?.text;
           if (inputTx) {
             this.currentInputTranscript += inputTx;
+            callbacks.onTranscriptUpdate?.(this.currentInputTranscript);
           }
 
           // Accumulate output (model) transcription
@@ -52,6 +66,7 @@ export class GeminiClient implements LiveClient {
             if (this.currentInputTranscript.trim()) {
                 callbacks.onMessage(this.currentInputTranscript, 'user');
                 this.currentInputTranscript = '';
+                callbacks.onTranscriptUpdate?.('');
             }
             if (this.currentOutputTranscript.trim()) {
                 callbacks.onMessage(this.currentOutputTranscript, 'assistant');
@@ -89,6 +104,7 @@ export class GeminiClient implements LiveClient {
             callbacks.onInterrupted();
             this.currentInputTranscript = '';
             this.currentOutputTranscript = '';
+            callbacks.onTranscriptUpdate?.('');
           }
         },
         onclose: () => {

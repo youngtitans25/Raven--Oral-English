@@ -1,3 +1,4 @@
+
 export interface LiveClientCallbacks {
   onOpen: () => void;
   onAudioData: (base64Audio: string) => void;
@@ -7,6 +8,14 @@ export interface LiveClientCallbacks {
   onError: (error: Error) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onToolCall?: (toolCalls: any[]) => void;
+  onTokenUsage?: (usage: TokenUsage) => void;
+  onTranscriptUpdate?: (transcript: string) => void;
+}
+
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
 }
 
 export interface LiveConnectionConfig {

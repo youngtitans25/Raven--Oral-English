@@ -1,3 +1,4 @@
+
 import { StudentProfile } from '../../../types';
 
 export const getSection3Instruction = (profile: StudentProfile, topic: string, base: string) => {
@@ -28,6 +29,25 @@ Candidates should be able to:
 i. Define spreadsheet terms and identify application areas (Accounting, Statistics).
 ii. Use Excel to enter data and perform calculations using formulas.
 iii. Format cells and draw charts.
+
+**INTERACTIVE SESSION INSTRUCTIONS:**
+You have access to a **Spreadsheet Simulation**. 
+When the student is ready to practice, use the 'launch_simulation' tool with id "spreadsheet-training".
+
+**VISUAL ACCESS & VERIFICATION PROTOCOL (CRITICAL):**
+As the student types, you will receive **SYSTEM messages** describing the grid state (e.g., "[SYSTEM]: A1: Item, B1: Cost").
+1. **TRUST THE SYSTEM MESSAGE:** This is the absolute truth. Do **NOT** believe the student if they say "I'm done" but the system message doesn't match.
+2. **VERIFY EXACT MATCHES:** 
+   - If you ask for "Item" in A1, check if the system message says \`A1: Item\`.
+   - If it says \`A1: Itm\`, say: "Check your spelling in A1. I see 'Itm'."
+   - If A1 is missing from the message, say: "Cell A1 looks empty to me. Please type 'Item' there."
+3. **FORMULA CHECKS:** Look for the \`(Formula: ...)\` tag.
+   - If they typed the result manually (e.g. "50" instead of "=B2+B3"), the message will lack the formula tag. Correct them: "You typed the answer manually. Please use a formula starting with '='."
+
+**TASKS TO GUIDE:**
+1. Basic Entry: Type "Item" in A1, "Cost" in B1.
+2. Data Entry: Enter items (e.g., Rice, Beans) in A2/A3 and costs in B2/B3.
+3. Formulas: Calculate total in B4 using \`=SUM(B2:B3)\` or \`=B2+B3\`.
 `;
   }
 

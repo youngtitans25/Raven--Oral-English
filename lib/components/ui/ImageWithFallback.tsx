@@ -3,6 +3,9 @@ import { cn } from '../../utils';
 import { ImageOff } from 'lucide-react';
 
 interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  src?: string;
+  alt?: string;
+  className?: string;
   fallbackSrc?: string;
   fallbackContent?: React.ReactNode;
 }

@@ -1,17 +1,22 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, PenTool, Mic, Play, Sparkles, ChevronRight, Layers } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { ENGLISH_SECTIONS } from '../coaches';
+import { ENGLISH_SECTIONS, ENGLISH_INSTRUCTION } from '../coaches';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import { SyllabusPreviewModal } from './ui/SyllabusPreviewModal';
+import { SessionMode } from '../../types';
 
 interface EnglishSyllabusViewProps {
   onBack: () => void;
-  onStartSection: (sectionId: string) => void;
+  // Updated signature to accept mode
+  onStartSection: (sectionId: string, mode: SessionMode) => void;
 }
 
 const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [previewTopicId, setPreviewTopicId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,12 +27,27 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
     ? ENGLISH_SECTIONS.find(s => s.id === selectedSectionId) 
     : null;
 
+  // Get the specific module data for the preview modal
+  const activePreviewModule = activeSection?.subModules?.find(m => m.id === previewTopicId);
+
   const handleBack = () => {
     if (selectedSectionId) {
         setSelectedSectionId(null);
     } else {
         onBack();
     }
+  };
+
+  const handleTopicClick = (topicId: string) => {
+      setPreviewTopicId(topicId);
+  };
+
+  // Receive mode from modal
+  const handleStartSession = (mode: SessionMode) => {
+      if (previewTopicId) {
+          onStartSection(previewTopicId, mode);
+          setPreviewTopicId(null);
+      }
   };
 
   const renderMainView = () => (
@@ -102,7 +122,7 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
                     {activeSection.title.split(':')[1]}
                 </h1>
                 <p className="text-slate-600 text-sm md:text-base">
-                    Select a specific topic to start your personalized AI coaching session.
+                    Select a specific topic to view its syllabus and start your personalized AI coaching session.
                 </p>
             </div>
 
@@ -111,7 +131,7 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
                     <Card 
                         key={module.id}
                         className="group hover:border-emerald-500 transition-all cursor-pointer overflow-hidden border-slate-200"
-                        onClick={() => onStartSection(module.id)}
+                        onClick={() => handleTopicClick(module.id)}
                     >
                         <div className="flex flex-row sm:flex-col h-full">
                             {/* Image side (mobile: left, desktop: top) */}
@@ -133,7 +153,7 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
                                     {module.description}
                                 </p>
                                 <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-emerald-600 uppercase tracking-wider transition-colors">
-                                    <Play className="w-3 h-3 mr-1 fill-current" /> Start Drill
+                                    <BookOpen className="w-3 h-3 mr-1 fill-current" /> View Syllabus
                                 </div>
                             </div>
                         </div>
@@ -146,6 +166,19 @@ const EnglishSyllabusView: React.FC<EnglishSyllabusViewProps> = ({ onBack, onSta
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Syllabus Modal */}
+      {previewTopicId && activePreviewModule && (
+          <SyllabusPreviewModal 
+            topicId={previewTopicId}
+            topicTitle={activePreviewModule.title}
+            topicImage={activePreviewModule.image}
+            subjectName="Use of English"
+            onClose={() => setPreviewTopicId(null)}
+            onStart={handleStartSession}
+            instructionGenerator={ENGLISH_INSTRUCTION}
+          />
+      )}
+
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
         <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-emerald-600 text-sm">

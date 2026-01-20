@@ -1,3 +1,4 @@
+
 import { Tool, Type } from "@google/genai";
 
 export const TOOLS: Tool[] = [
@@ -23,14 +24,14 @@ export const TOOLS: Tool[] = [
       },
       {
         name: 'launch_simulation',
-        description: 'Launch an interactive simulation on the student screen. Use this when you want to demonstrate a complex concept visually (e.g., Periodic Trends, Bohr Models).',
+        description: 'Launch an interactive simulation on the student screen. Use this when you want to demonstrate a complex concept visually (e.g., Periodic Trends, Spreadsheets).',
         parameters: {
           type: Type.OBJECT,
           properties: {
             simulation_id: {
               type: Type.STRING,
-              description: 'The ID of the simulation to launch. Currently supported: "periodic-table-trends".',
-              enum: ['periodic-table-trends']
+              description: 'The ID of the simulation to launch. Supported: "periodic-table-trends", "spreadsheet-training".',
+              enum: ['periodic-table-trends', 'spreadsheet-training']
             },
             context: {
               type: Type.STRING,

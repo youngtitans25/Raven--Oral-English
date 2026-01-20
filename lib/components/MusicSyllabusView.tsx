@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Music as MusicIcon, Mic2, Play, Sparkles, ChevronRight, Layers, Sliders, Globe, Monitor, Radio } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { MUSIC_SECTIONS } from '../coaches';
+import { MUSIC_SECTIONS, MUSIC_INSTRUCTION } from '../coaches';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import { SyllabusPreviewModal } from './ui/SyllabusPreviewModal';
 
 interface MusicSyllabusViewProps {
   onBack: () => void;
@@ -12,6 +14,7 @@ interface MusicSyllabusViewProps {
 
 const MusicSyllabusView: React.FC<MusicSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [previewTopicId, setPreviewTopicId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -21,12 +24,25 @@ const MusicSyllabusView: React.FC<MusicSyllabusViewProps> = ({ onBack, onStartSe
     ? MUSIC_SECTIONS.find(s => s.id === selectedSectionId) 
     : null;
 
+  const activePreviewModule = activeSection?.subModules?.find(m => m.id === previewTopicId);
+
   const handleBack = () => {
     if (selectedSectionId) {
         setSelectedSectionId(null);
     } else {
         onBack();
     }
+  };
+
+  const handleTopicClick = (topicId: string) => {
+      setPreviewTopicId(topicId);
+  };
+
+  const handleStartSession = () => {
+      if (previewTopicId) {
+          onStartSection(previewTopicId);
+          setPreviewTopicId(null);
+      }
   };
 
   const renderMainView = () => (
@@ -118,17 +134,17 @@ const MusicSyllabusView: React.FC<MusicSyllabusViewProps> = ({ onBack, onStartSe
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {activeSection.subModules?.map((module: any, index) => (
+                {activeSection.subModules?.map((module, index) => (
                     <Card 
                         key={module.id}
                         className={`group hover:border-current transition-all cursor-pointer overflow-hidden border-slate-200 ${themeColor}`}
-                        onClick={() => onStartSection(module.id)}
+                        onClick={() => handleTopicClick(module.id)}
                     >
                         <div className="flex flex-row sm:flex-col h-full text-slate-900">
                              {/* Image side */}
                              <div className="w-1/3 sm:w-full h-auto sm:h-40 overflow-hidden relative shrink-0">
                                 <ImageWithFallback 
-                                    src={module.image || 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1000&auto=format&fit=crop'} 
+                                    src={(module as any).image || 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?q=80&w=1000&auto=format&fit=crop'} 
                                     alt={module.title}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
@@ -144,7 +160,7 @@ const MusicSyllabusView: React.FC<MusicSyllabusViewProps> = ({ onBack, onStartSe
                                     {module.description}
                                 </p>
                                 <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-current uppercase tracking-wider transition-colors">
-                                    <Play className="w-3 h-3 mr-1 fill-current" /> Start Lesson
+                                    <BookOpen className="w-3 h-3 mr-1 fill-current" /> View Syllabus
                                 </div>
                             </div>
                         </div>
@@ -157,6 +173,19 @@ const MusicSyllabusView: React.FC<MusicSyllabusViewProps> = ({ onBack, onStartSe
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Syllabus Modal */}
+      {previewTopicId && activePreviewModule && (
+          <SyllabusPreviewModal 
+            topicId={previewTopicId}
+            topicTitle={activePreviewModule.title}
+            topicImage={(activePreviewModule as any).image} // Fixed
+            subjectName="Music"
+            onClose={() => setPreviewTopicId(null)}
+            onStart={handleStartSession}
+            instructionGenerator={MUSIC_INSTRUCTION}
+          />
+      )}
+
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
         <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-pink-600 text-sm">

@@ -1,9 +1,10 @@
+
 import { StudentProfile, LearningAnalytics, GamificationProfile } from "../types";
 
 export const MOCK_STUDENT: StudentProfile = {
   id: "std_123456",
   name: "Chioma Adebayo",
-  targetExam: "JAMB",
+  activeExamId: "JAMB",
   targetScore: 320,
   profile_complete: true,
   subjects: ["Use of English", "Mathematics", "Physics", "Chemistry"],

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { StudentProfile, StudentCategory } from '../../types';
 import { 
@@ -176,6 +177,7 @@ const ProfileSetup: React.FC<ProfileSetupProps> = ({ user, onComplete, onLogout 
         subjects: subjects,
         institute: formData.institution,
         course: formData.course,
+        activeExamId: 'JAMB', // Default to JAMB
         profile_complete: true
     };
 

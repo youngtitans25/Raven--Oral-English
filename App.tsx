@@ -1,9 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
-import { StudentProfile, SessionStatus, AppView } from './types';
+import { StudentProfile, SessionStatus, AppView, ExamMode } from './types';
 import { useLiveSession } from './hooks/useLiveSession';
 import { Loader2 } from 'lucide-react';
 import { Button } from './lib/components/ui/button';
 import { ImageWithFallback } from './lib/components/ui/ImageWithFallback';
+import { EXAM_CONTEXTS } from './lib/examContext';
 
 // Screens
 import LandingPage from './lib/components/LandingPage';
@@ -51,6 +53,7 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [activeSubject, setActiveSubject] = useState<string>('Use of English');
   const [activeTopic, setActiveTopic] = useState<string | undefined>(undefined);
+  const [activeExam, setActiveExam] = useState<ExamMode>('JAMB');
 
   // Live Session Hook
   const { 
@@ -65,7 +68,9 @@ const App: React.FC = () => {
     visualContent,
     activeSimulation,
     setActiveSimulation,
-    isProcessingText
+    isProcessingText,
+    tokenUsage,
+    currentTranscript
   } = useLiveSession();
 
   // Combine error messages
@@ -287,14 +292,14 @@ const App: React.FC = () => {
     }
 
     // Otherwise start the session (Math, Physics, or specific sections)
-    startSession(profile, normSubject, topicId);
+    startSession(profile, normSubject, topicId, activeExam);
   };
   
   // Handler for reconnecting after timeout
   const handleReconnect = () => {
       if (!profile) return;
       setGlobalError(null); // Clear timeout error
-      startSession(profile, activeSubject, activeTopic);
+      startSession(profile, activeSubject, activeTopic, activeExam);
   };
 
   const handleNavigate = (newView: AppView) => {
@@ -311,6 +316,8 @@ const App: React.FC = () => {
     }
   };
 
+  const currentExamConfig = EXAM_CONTEXTS[activeExam];
+
   // --- RENDER VIEWS ---
 
   if (view === 'LOADING') {
@@ -318,7 +325,7 @@ const App: React.FC = () => {
       <LayoutWrapper>
         <div className="min-h-screen flex flex-col items-center justify-center">
             <Loader2 className="w-10 h-10 text-palm-500 animate-spin mb-4" />
-            <p className="text-gray-500 font-medium">Initializing Raven...</p>
+            <p className="text-gray-500 font-medium">Initializing {currentExamConfig.shortName} Engine...</p>
         </div>
       </LayoutWrapper>
     );
@@ -587,11 +594,11 @@ const App: React.FC = () => {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white gap-4 p-4 text-center">
                 <div className="relative">
-                    <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full animate-pulse"></div>
-                    <Loader2 className="w-12 h-12 animate-spin text-emerald-500 relative z-10" />
+                    <div className={`absolute inset-0 blur-xl rounded-full animate-pulse opacity-20 bg-gradient-to-br ${currentExamConfig.theme.gradient}`}></div>
+                    <Loader2 className={`w-12 h-12 animate-spin relative z-10 ${currentExamConfig.theme.text}`} />
                 </div>
                 <h2 className="text-xl font-medium mt-4">Connecting to {activeSubject} Coach...</h2>
-                <p className="text-sm text-white/50 mb-6">Personalizing lesson for {profile?.name}</p>
+                <p className="text-sm text-white/50 mb-6">Mode: {currentExamConfig.fullName}</p>
                 
                 <Button 
                     variant="ghost" 
@@ -617,6 +624,8 @@ const App: React.FC = () => {
             onTogglePause={togglePause}
             onSendText={sendChat}
             isProcessingText={isProcessingText}
+            tokenUsage={tokenUsage}
+            currentTranscript={currentTranscript}
           />
       );
   }
@@ -632,13 +641,13 @@ const App: React.FC = () => {
                             src="/logo.png" 
                             alt="Raven Logo" 
                             className="w-full h-full object-contain"
-                            fallbackContent={<div className="w-8 h-8 bg-gradient-to-br from-palm-500 to-palm-700 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">R</div>}
+                            fallbackContent={<div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm bg-gradient-to-br ${currentExamConfig.theme.gradient}`}>R</div>}
                         />
                     </div>
                     <span className="font-bold text-xl tracking-tight text-slate-900">Raven</span>
                 </div>
                 <div className="text-sm text-muted-foreground hidden md:block">
-                    Student-Centric AI Learning
+                    Unified Learning Engine
                 </div>
             </header>
 
@@ -653,6 +662,8 @@ const App: React.FC = () => {
                 onStartSession={handleStartSession} 
                 profile={profile}
                 onLogout={handleLogout}
+                currentExam={activeExam}
+                onSwitchExam={setActiveExam}
             />
         </LayoutWrapper>
       );

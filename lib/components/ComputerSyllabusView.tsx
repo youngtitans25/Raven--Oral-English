@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, BookOpen, Monitor, Cpu, Code, Play, Sparkles, ChevronRight, Layers, Keyboard, Database, FileText, Wrench, Globe, Terminal, Bot, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { COMPUTER_SECTIONS } from '../coaches';
+import { COMPUTER_SECTIONS, COMPUTER_INSTRUCTION } from '../coaches';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import { SyllabusPreviewModal } from './ui/SyllabusPreviewModal';
 
 interface ComputerSyllabusViewProps {
   onBack: () => void;
@@ -12,6 +14,7 @@ interface ComputerSyllabusViewProps {
 
 const ComputerSyllabusView: React.FC<ComputerSyllabusViewProps> = ({ onBack, onStartSection }) => {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [previewTopicId, setPreviewTopicId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -21,12 +24,25 @@ const ComputerSyllabusView: React.FC<ComputerSyllabusViewProps> = ({ onBack, onS
     ? COMPUTER_SECTIONS.find(s => s.id === selectedSectionId) 
     : null;
 
+  const activePreviewModule = activeSection?.subModules?.find(m => m.id === previewTopicId);
+
   const handleBack = () => {
     if (selectedSectionId) {
         setSelectedSectionId(null);
     } else {
         onBack();
     }
+  };
+
+  const handleTopicClick = (topicId: string) => {
+      setPreviewTopicId(topicId);
+  };
+
+  const handleStartSession = () => {
+      if (previewTopicId) {
+          onStartSection(previewTopicId);
+          setPreviewTopicId(null);
+      }
   };
 
   const renderMainView = () => (
@@ -132,7 +148,7 @@ const ComputerSyllabusView: React.FC<ComputerSyllabusViewProps> = ({ onBack, onS
                     <Card 
                         key={module.id}
                         className={`group hover:border-current transition-all cursor-pointer overflow-hidden border-slate-200 ${themeColor}`}
-                        onClick={() => onStartSection(module.id)}
+                        onClick={() => handleTopicClick(module.id)}
                     >
                         <div className="flex flex-row sm:flex-col h-full text-slate-900">
                              {/* Image side */}
@@ -154,7 +170,7 @@ const ComputerSyllabusView: React.FC<ComputerSyllabusViewProps> = ({ onBack, onS
                                     {module.description}
                                 </p>
                                 <div className="mt-auto flex items-center text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-current uppercase tracking-wider transition-colors">
-                                    <Play className="w-3 h-3 mr-1 fill-current" /> Start Lesson
+                                    <BookOpen className="w-3 h-3 mr-1 fill-current" /> View Syllabus
                                 </div>
                             </div>
                         </div>
@@ -167,6 +183,19 @@ const ComputerSyllabusView: React.FC<ComputerSyllabusViewProps> = ({ onBack, onS
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Syllabus Modal */}
+      {previewTopicId && activePreviewModule && (
+          <SyllabusPreviewModal 
+            topicId={previewTopicId}
+            topicTitle={activePreviewModule.title}
+            topicImage={(activePreviewModule as any).image}
+            subjectName="Computer Studies"
+            onClose={() => setPreviewTopicId(null)}
+            onStart={handleStartSession}
+            instructionGenerator={COMPUTER_INSTRUCTION}
+          />
+      )}
+
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-30 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-sm">
         <Button variant="ghost" onClick={handleBack} className="text-slate-600 gap-2 pl-0 hover:bg-transparent hover:text-cyan-600 text-sm">

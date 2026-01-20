@@ -1,3 +1,4 @@
+
 import { StudentProfile } from './types';
 import { ALL_SUBJECTS } from './subjects';
 import { createGenericInstruction } from './coaches/base';
@@ -30,31 +31,31 @@ import { PHE_INSTRUCTION } from './coaches/subjects/phe';
 import { YORUBA_INSTRUCTION } from './coaches/subjects/yoruba';
 
 // Re-export constants and types for use in components
-export { ENGLISH_SECTIONS } from './coaches/subjects/english';
-export { HOME_ECONOMICS_SECTIONS } from './coaches/subjects/home_economics';
-export { GOVERNMENT_SECTIONS } from './coaches/subjects/government';
-export { AGRICULTURE_SECTIONS } from './coaches/subjects/agriculture';
-export { ARABIC_SECTIONS } from './coaches/subjects/arabic';
-export { ART_SECTIONS } from './coaches/subjects/art';
-export { BIOLOGY_SECTIONS } from './coaches/subjects/biology';
-export { CHEMISTRY_SECTIONS } from './coaches/subjects/chemistry';
-export { ACCOUNTS_SECTIONS } from './coaches/subjects/accounts';
-export { CRS_SECTIONS } from './coaches/subjects/crs';
-export { COMMERCE_SECTIONS } from './coaches/subjects/commerce';
-export { COMPUTER_SECTIONS } from './coaches/subjects/computer';
-export { ECONOMICS_SECTIONS } from './coaches/subjects/economics';
-export { FRENCH_SECTIONS } from './coaches/subjects/french';
-export { GEOGRAPHY_SECTIONS } from './coaches/subjects/geography';
-export { HAUSA_SECTIONS } from './coaches/subjects/hausa';
-export { HISTORY_SECTIONS } from './coaches/subjects/history';
-export { IGBO_SECTIONS } from './coaches/subjects/igbo';
-export { IRS_SECTIONS } from './coaches/subjects/irs';
-export { LITERATURE_SECTIONS } from './coaches/subjects/literature';
-export { MATHEMATICS_SECTIONS } from './coaches/subjects/mathematics';
-export { MUSIC_SECTIONS } from './coaches/subjects/music';
-export { PHE_SECTIONS } from './coaches/subjects/phe';
-export { PHYSICS_SECTIONS } from './coaches/subjects/physics';
-export { YORUBA_SECTIONS } from './coaches/subjects/yoruba';
+export { ENGLISH_SECTIONS, ENGLISH_INSTRUCTION } from './coaches/subjects/english';
+export { HOME_ECONOMICS_SECTIONS, HOME_ECONOMICS_INSTRUCTION } from './coaches/subjects/home_economics';
+export { GOVERNMENT_SECTIONS, GOVERNMENT_INSTRUCTION } from './coaches/subjects/government';
+export { AGRICULTURE_SECTIONS, AGRI_INSTRUCTION } from './coaches/subjects/agriculture';
+export { ARABIC_SECTIONS, ARABIC_INSTRUCTION } from './coaches/subjects/arabic';
+export { ART_SECTIONS, ART_INSTRUCTION } from './coaches/subjects/art';
+export { BIOLOGY_SECTIONS, BIOLOGY_INSTRUCTION } from './coaches/subjects/biology';
+export { CHEMISTRY_SECTIONS, CHEMISTRY_INSTRUCTION } from './coaches/subjects/chemistry';
+export { ACCOUNTS_SECTIONS, ACCOUNTS_INSTRUCTION } from './coaches/subjects/accounts';
+export { CRS_SECTIONS, CRS_INSTRUCTION } from './coaches/subjects/crs';
+export { COMMERCE_SECTIONS, COMMERCE_INSTRUCTION } from './coaches/subjects/commerce';
+export { COMPUTER_SECTIONS, COMPUTER_INSTRUCTION } from './coaches/subjects/computer';
+export { ECONOMICS_SECTIONS, ECONOMICS_INSTRUCTION } from './coaches/subjects/economics';
+export { FRENCH_SECTIONS, FRENCH_INSTRUCTION } from './coaches/subjects/french';
+export { GEOGRAPHY_SECTIONS, GEOGRAPHY_INSTRUCTION } from './coaches/subjects/geography';
+export { HAUSA_SECTIONS, HAUSA_INSTRUCTION } from './coaches/subjects/hausa';
+export { HISTORY_SECTIONS, HISTORY_INSTRUCTION } from './coaches/subjects/history';
+export { IGBO_SECTIONS, IGBO_INSTRUCTION } from './coaches/subjects/igbo';
+export { IRS_SECTIONS, IRS_INSTRUCTION } from './coaches/subjects/irs';
+export { LITERATURE_SECTIONS, LIT_INSTRUCTION } from './coaches/subjects/literature';
+export { MATHEMATICS_SECTIONS, MATH_INSTRUCTION } from './coaches/subjects/mathematics';
+export { MUSIC_SECTIONS, MUSIC_INSTRUCTION } from './coaches/subjects/music';
+export { PHE_SECTIONS, PHE_INSTRUCTION } from './coaches/subjects/phe';
+export { PHYSICS_SECTIONS, PHYSICS_INSTRUCTION } from './coaches/subjects/physics';
+export { YORUBA_SECTIONS, YORUBA_INSTRUCTION } from './coaches/subjects/yoruba';
 export { BASE_INSTRUCTION } from './coaches/base';
 
 export interface CoachConfig {
